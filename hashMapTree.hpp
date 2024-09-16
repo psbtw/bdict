@@ -17,10 +17,11 @@ private:
     V value;
     std::unordered_map<K,HashMapTree<K,V>*> sub;
 public:
+    //HashMapTree();
     HashMapTree(K k,V v);
-    ~HashMapTree();
+    //~HashMapTree();
     HashMapTree* find(K& key, int&);
-    bool insert(K& key, V& value);
+    bool insert(K key, V value);
 };
 
 

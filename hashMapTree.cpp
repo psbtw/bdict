@@ -1,20 +1,22 @@
 #include "hashMapTree.hpp"
 #include <string>
-
-
-template<typename K, typename V>
-requires ArrayType<K>
-HashMapTree<K,V>::HashMapTree(K k, V v):(key(k), value(v), sub(std::unordered_map<K,HashMapTree<K,V>*>{}))
-{
-
-}
+#include <vector>
 
 template<typename K, typename V>
 requires ArrayType<K>
-HashMapTree<K,V>::~HashMapTree()
+HashMapTree<K,V>::HashMapTree(K k, V v)
 {
-
+    key = k;
+    value = v;
+    //sub = std::unordered_map<K,HashMapTree<K,V>*>();
 }
+
+// template<typename K, typename V>
+// requires ArrayType<K>
+// HashMapTree<K,V>::~HashMapTree()
+// {
+
+// }
 
 template <typename K, typename V>
 requires ArrayType<K>
@@ -33,7 +35,8 @@ HashMapTree<K,V> *HashMapTree<K, V>::find(K& key, int& idx)
 }
 
 template <typename K, typename V>
-bool HashMapTree<K, V>::insert(K& key, V& value)
+requires ArrayType<K>
+bool HashMapTree<K, V>::insert(K key, V value)
 {
     int idx;
     auto ptr = this->find(key, idx);
@@ -52,5 +55,7 @@ bool HashMapTree<K, V>::insert(K& key, V& value)
 }
 
 int main(){
-    auto tree = HashMapTree<std::string, int>();
+    auto tree = HashMapTree<std::string, std::vector<std::string>>("wo", {"我","窝"});
+    tree.insert("wa", {"哇","蛙"});
+    tree.insert("ni", {"你","泥"});
 }
