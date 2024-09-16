@@ -18,6 +18,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
 #add_subdirectory(common)
 
 #add_executable(a.out 0-100/45-canJump-2.cc)
-add_executable(a.out hashMapTree.cpp)
+file(GLOB SRC ${PROJECT_SOURCE_DIR}/*.cpp ${PROJECT_SOURCE_DIR}/*.hpp)
+add_executable(a.out ${SRC})
 
 #target_link_libraries(nqueen common)
