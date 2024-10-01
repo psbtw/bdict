@@ -2,10 +2,10 @@
 #include <string>
 #include <vector>
 #include <concepts>
-#include "pinyin_consts.hpp"
+#include "pinyinEncoder/consts.hpp"
 #include "wordNode.hpp"
 #include "hashMapDict.hpp"
-
+#include <iostream>
 
 template <std::totally_ordered K, std::totally_ordered V>
 HashMapDict<K, V>::HashMapDict()
@@ -73,4 +73,5 @@ bool HashMapDict<K, V>::insert(std::vector<K>, V data)
 int main(){
     //auto dict = HashMapDict<PinyinAlphabet, WordNode<std::string> >;
     HashMapDict<PinyinAlphabet, WordNode<std::string> > dict;
+    std::cout << "dict inited\n";
 }
