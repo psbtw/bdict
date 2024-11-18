@@ -29,11 +29,11 @@ enum class PinyinInitial : char {
     S,
     Y,
     W,
-    Zero
+    End
 };
 
 enum class PinyinFinal : char {
-    Invalid = 0,
+    Invalid = PinyinFinal::End,
     A,
     AI,
     AN,
@@ -69,7 +69,7 @@ enum class PinyinFinal : char {
     VE,
     UE,
     NG,
-    Zero
+    End
 };
 
 enum class PinyinAlphabet : char {
@@ -179,3 +179,4 @@ enum class PinyinFuzzyFlag {
 
 using PinyinSyllable = std::vector<PinyinAlphabet>;
 
+using PinyinVec = std::vector<PinyinAlphabet>;

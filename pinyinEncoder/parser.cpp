@@ -1,8 +1,9 @@
 #include "parser.hpp"
+#include <cstring>
 
 void PinyinParser::init_base_map()
 {
-    _base_map = move(unordered_map<string, vector<PinyinAlphabet>>{
+    _base_map = move(unordered_map<string_view, vector<PinyinAlphabet>>{
         {"a", {PinyinAlphabet::A}},
         {"o", {PinyinAlphabet::O}},
         {"e", {PinyinAlphabet::E}},
@@ -66,4 +67,17 @@ void PinyinParser::SetFuzzyFlags(vector<PinyinFuzzyFlag> &v) {
         }
 
     }
+}
+
+const size_t SyllableMaxLen = 6;
+vector<PinyinVec>& PinyinParser::Parse(const string &s)
+{
+    auto ret = vector<PinyinVec>();
+    auto len = s.size();
+    for (auto i=0; i<len; ++i) {
+        for (auto j=i; j<i+SyllableMaxLen; ++j) {
+            
+        }
+    }
+
 }
