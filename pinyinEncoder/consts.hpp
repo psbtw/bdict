@@ -1,10 +1,11 @@
 #pragma once
 
-#include "../common/common.hpp"
+#include "../../bcommon/common/log.hpp"
 #include <vector>
 #include <string>
 
-enum class PinyinInitial : char {
+namespace Pinyin {
+    enum class Initial : char {
     Invalid = 0,
     B = 1,
     P,
@@ -32,8 +33,8 @@ enum class PinyinInitial : char {
     End
 };
 
-enum class PinyinFinal : char {
-    Invalid = PinyinFinal::End,
+enum class Final : char {
+    Invalid = (char)Initial::End,
     A,
     AI,
     AN,
@@ -72,7 +73,7 @@ enum class PinyinFinal : char {
     End
 };
 
-enum class PinyinAlphabet : char {
+enum class Alphabet : char {
     Invalid = 0,
     A,
     AI,
@@ -136,7 +137,7 @@ enum class PinyinAlphabet : char {
     InitialEnd,
 };
 
-enum class PinyinFuzzyFlag {
+enum FuzzyFlag : int {
     None = 0,
     CommonTypo = 1 << 0,
     NG_GN [[deprecated]] = CommonTypo,
@@ -177,6 +178,24 @@ enum class PinyinFuzzyFlag {
 };
 
 
-using PinyinSyllable = std::vector<PinyinAlphabet>;
+struct Syllable {
+    Initial i;
+    Final f;
+};
 
-using PinyinVec = std::vector<PinyinAlphabet>;
+struct PinyinMapEntry {
+    Initial i;
+    Final f;
+    int fz;
+
+    // PinyinMapEntry(Initial i, Final f, FuzzyFlag fz) {
+    //     i = i;
+    //     f = f;
+    //     fz = fz;
+    // }
+};
+
+using PinyinVec = std::vector<Alphabet>;
+
+using PinyinMap = unordered_map<string_view, PinyinMapEntry>;
+}

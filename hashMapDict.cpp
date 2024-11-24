@@ -71,7 +71,7 @@ bool HashMapDict<K, V>::insert(std::vector<K>, V data)
 }
 
 int main(){
-    //auto dict = HashMapDict<PinyinAlphabet, WordNode<std::string> >;
-    HashMapDict<PinyinAlphabet, WordNode<std::string> > dict;
+    //auto dict = HashMapDict<Alphabet, WordNode<std::string> >;
+    HashMapDict<Alphabet, WordNode<std::string> > dict;
     std::cout << "dict inited\n";
 }
