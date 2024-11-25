@@ -620,6 +620,71 @@ void PinyinParser::splitBaseMap() {
     }
 }
 
+void PinyinParser::initAlphabetMap() {
+    _alphabet_map = move(AlphbetMap{
+        {"b", {Alphabet::B}},
+        {"p", {Alphabet::P}},
+        {"m", {Alphabet::M}},
+        {"f", {Alphabet::F}},
+        {"d", {Alphabet::D}},
+        {"t", {Alphabet::T}},
+        {"n", {Alphabet::N}},
+        {"l", {Alphabet::L}},
+        {"g", {Alphabet::G}},
+        {"k", {Alphabet::K}},
+        {"h", {Alphabet::H}},
+        {"j", {Alphabet::J}},
+        {"q", {Alphabet::Q}},
+        {"x", {Alphabet::X}},
+        {"zh", {Alphabet::ZH}},
+        {"ch", {Alphabet::CH}},
+        {"sh", {Alphabet::SH}},
+        {"r", {Alphabet::R}},
+        {"z", {Alphabet::Z}},
+        {"c", {Alphabet::C}},
+        {"s", {Alphabet::S}},
+        {"y", {Alphabet::Y}},
+        {"w", {Alphabet::W}},
+        {"a", {Alphabet::A}},
+        {"o", {Alphabet::O}},
+        {"e", {Alphabet::E}},
+        {"i", {Alphabet::I}},
+        {"u", {Alphabet::U}},
+        {"v", {Alphabet::V}},
+        {"ai", {Alphabet::AI}},
+        {"ei", {Alphabet::EI}},
+        {"ui", {Alphabet::UI}},
+        {"ao", {Alphabet::AO}},
+        {"ou", {Alphabet::OU}},
+        {"iu", {Alphabet::IU}},
+        {"ie", {Alphabet::IE}},
+        {"ve", {Alphabet::VE}},
+        {"er", {Alphabet::ER}},
+        {"an", {Alphabet::AN}},
+        {"en", {Alphabet::EN}},
+        {"in", {Alphabet::IN}},
+        {"un", {Alphabet::UN}},
+        {"vn", {Alphabet::VN}},
+        {"ang", {Alphabet::ANG}},
+        {"eng", {Alphabet::ENG}},
+        {"ing", {Alphabet::ING}},
+        {"ong", {Alphabet::ONG}}
+    });
+}
+
+struct AlphaMark
+{
+    start_pos s;
+    end_pos e;
+    Alphabet a;
+};
+
+const int MaxAlphabetLen = 3;
+bool PinyinParser::hasValidAlphabet(const string& str, int start,  vector<AlphaMark>& m) {
+    for (int i=0; i<MaxAlphabetLen && start+i < str.size(); ++i) {
+        if (_alphabet_map.contains())
+    }
+}
 vector<vector<Alphabet>> PinyinParser::StringToAlphabet(std::string &str)
 {
     vector<vector<Alphabet>> ret; //n*m fuzzy combinations

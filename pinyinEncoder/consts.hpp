@@ -75,6 +75,30 @@ enum class Final : char {
 
 enum class Alphabet : char {
     Invalid = 0,
+    B,
+    P,
+    M,
+    F,
+    D,
+    T,
+    N,
+    L,
+    G,
+    K,
+    H,
+    J,
+    Q,
+    X,
+    ZH,
+    CH,
+    SH,
+    R,
+    Z,
+    C,
+    S,
+    Y,
+    W,
+    InitialEnd,
     A,
     AI,
     AN,
@@ -110,31 +134,7 @@ enum class Alphabet : char {
     VE,
     UE,
     NG,
-    FinalEnd,
-    B,
-    P,
-    M,
-    F,
-    D,
-    T,
-    N,
-    L,
-    G,
-    K,
-    H,
-    J,
-    Q,
-    X,
-    ZH,
-    CH,
-    SH,
-    R,
-    Z,
-    C,
-    S,
-    Y,
-    W,
-    InitialEnd,
+    FinalEnd
 };
 
 enum FuzzyFlag : int {
@@ -198,4 +198,6 @@ struct PinyinMapEntry {
 using PinyinVec = std::vector<Alphabet>;
 
 using PinyinMap = unordered_map<string_view, PinyinMapEntry>;
+using AlphabetMap = unordered_map<string, vecotr<Alphabet>>;
+
 }

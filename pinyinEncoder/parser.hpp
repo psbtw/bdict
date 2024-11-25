@@ -7,10 +7,12 @@ class PinyinParser {
 
 private:
     PinyinMap _all_map, _base_map, _fuzzy_map;
+    AlphabetMap _alphabet_map;
     void splitBaseMap();
     const PinyinMap& getAllMap();
     const PinyinMap& getBaseMap();
     void init_base_map();
+    void initAlphabetMap();
 
 public:
     vector<vector<Alphabet>> StringToAlphabet(std::string& str);
