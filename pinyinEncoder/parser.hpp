@@ -1,5 +1,6 @@
 #include "consts.hpp"
 #include <unordered_map>
+#include "../../bcommon/container/graph.hpp"
 
 namespace Pinyin {
 
@@ -28,11 +29,5 @@ public:
         return ret;
     }
 };
-
-{
-    _fz_map = PinyinMap{
-        
-    }
-}
 
 }

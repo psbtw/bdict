@@ -621,7 +621,7 @@ void PinyinParser::splitBaseMap() {
 }
 
 void PinyinParser::initAlphabetMap() {
-    _alphabet_map = move(AlphbetMap{
+    _alphabet_map = move(AlphabetMap{
         {"b", {Alphabet::B}},
         {"p", {Alphabet::P}},
         {"m", {Alphabet::M}},
@@ -664,7 +664,7 @@ void PinyinParser::initAlphabetMap() {
         {"en", {Alphabet::EN}},
         {"in", {Alphabet::IN}},
         {"un", {Alphabet::UN}},
-        {"vn", {Alphabet::VN}},
+        //{"vn", {Alphabet::VN}},
         {"ang", {Alphabet::ANG}},
         {"eng", {Alphabet::ENG}},
         {"ing", {Alphabet::ING}},
@@ -674,15 +674,17 @@ void PinyinParser::initAlphabetMap() {
 
 struct AlphaMark
 {
-    start_pos s;
-    end_pos e;
+    size_t start_pos;
+    size_t end_pos;
     Alphabet a;
 };
 
 const int MaxAlphabetLen = 3;
 bool PinyinParser::hasValidAlphabet(const string& str, int start,  vector<AlphaMark>& m) {
     for (int i=0; i<MaxAlphabetLen && start+i < str.size(); ++i) {
-        if (_alphabet_map.contains())
+        if (_alphabet_map.contains(string_view(&str[start], i))) {
+            
+        }
     }
 }
 vector<vector<Alphabet>> PinyinParser::StringToAlphabet(std::string &str)
