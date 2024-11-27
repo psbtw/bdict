@@ -200,4 +200,9 @@ using PinyinVec = std::vector<Alphabet>;
 using PinyinMap = unordered_map<string_view, PinyinMapEntry>;
 using AlphabetMap = unordered_map<string, vecotr<Alphabet>>;
 
+struct AlphabetTree {
+    const string s;
+    unordered_map<string, unordered_map<string, AlphabetTree>> sub;
+};
+
 }

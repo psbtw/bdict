@@ -674,19 +674,60 @@ void PinyinParser::initAlphabetMap() {
 
 struct AlphaMark
 {
+    string_view s;
+    Alphabet a; 
     size_t start_pos;
-    size_t end_pos;
-    Alphabet a;
+    size_t len;  
+    //const string_view& src;
 };
 
+struct MarkKey {
+    size_t start_pos;
+    size_t len;  
+}
+// struct PinyinGraphNode {
+//     string_view str;
+//     size_t start, end;
+//     const string_view& src;
+// }
+
 const int MaxAlphabetLen = 3;
-bool PinyinParser::hasValidAlphabet(const string& str, int start,  vector<AlphaMark>& m) {
-    for (int i=0; i<MaxAlphabetLen && start+i < str.size(); ++i) {
-        if (_alphabet_map.contains(string_view(&str[start], i))) {
-            
+bool PinyinParser::hasValidAlphabet(const string& src, int start,  vector<AlphaMark>& m) {
+    for (int i=1; i<=MaxAlphabetLen && start+i-1 < src.size(); ++i) {
+        auto s = string_view(src, i);
+        if (_alphabet_map.contains(s)) {
+            m.emplace_back(AlphaMark{s, _alphabet_map[s], start, i, });
         }
     }
 }
+
+Graph<AlphaMark*> PinyinParser::ParseToGraph(const string& src) {
+    Graph<AlphaMark, MarkKey> g();
+    auto table = g.GetTable();
+    auto cur_node = &g.GetRoot();
+    size_t start = 0;
+    while (start < src.size()) {
+        for (int i=1; i<=MaxAlphabetLen && start+i-1 < src.size(); ++i) {
+            auto s = string_view(src, i);
+            if (_alphabet_map.contains(s)) {
+                const MarkKey key{start,i};
+                if (table.contains(key)) { //already exist
+                    cur_node->AddLink(table[key]);
+                } else { //new node
+                    cur_node->AddLink(g.AddNode(key, {s, _alphabetMap[s], start, i}));
+                }
+                
+            }
+        } //tried all 3, should dispatch to different cur_node to continue
+
+        ++start;
+    }
+    }
+    
+}
+
+
+
 vector<vector<Alphabet>> PinyinParser::StringToAlphabet(std::string &str)
 {
     vector<vector<Alphabet>> ret; //n*m fuzzy combinations
