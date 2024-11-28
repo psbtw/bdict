@@ -196,13 +196,53 @@ struct PinyinMapEntry {
 };
 
 using PinyinVec = std::vector<Alphabet>;
-
 using PinyinMap = unordered_map<string_view, PinyinMapEntry>;
-using AlphabetMap = unordered_map<string, vecotr<Alphabet>>;
+using AlphabetMap = unordered_map<string_view, Alphabet>;
 
-struct AlphabetTree {
-    const string s;
-    unordered_map<string, unordered_map<string, AlphabetTree>> sub;
+struct AlphaData {
+    string_view s;
+    Alphabet a; 
+    bool fz = true;
+};
+
+using ParseMap = unordered_map<string, vector<AlphaData>>;
+
+struct MarkKey {
+    size_t start_pos;
+    size_t len; 
+    bool operator==(const MarkKey& b) const {
+        return start_pos == b.start_pos &&
+            len == b.len;
+    } 
+};
+
+struct AlphaMark
+{
+    MarkKey key;
+    AlphaData data;  
+    //const string_view& src;
 };
 
 }
+
+namespace std {
+template<>
+struct hash<Pinyin::MarkKey>{
+    size_t operator()(const Pinyin::MarkKey& k) const
+    {
+        // using size_t;
+        // using hash;
+        // using string;
+
+        // Compute individual hash values for first,
+        // second and third and combine them using XOR
+        // and bit shifting:
+
+        // return ((hash<string>()(k.first)
+        //         ^ (hash<string>()(k.second) << 1)) >> 1)
+        //         ^ (hash<int>()(k.third) << 1);
+        return (k.start_pos << 16) | k.len;
+    }
+};
+}
+

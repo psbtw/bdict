@@ -608,6 +608,7 @@ PinyinParser::PinyinParser() {
         {"a", {Initial::End, Final::A, FuzzyFlag::None}},
     });
     splitBaseMap();
+    init_parse_map();
 }
 
 void PinyinParser::splitBaseMap() {
@@ -622,69 +623,57 @@ void PinyinParser::splitBaseMap() {
 
 void PinyinParser::initAlphabetMap() {
     _alphabet_map = move(AlphabetMap{
-        {"b", {Alphabet::B}},
-        {"p", {Alphabet::P}},
-        {"m", {Alphabet::M}},
-        {"f", {Alphabet::F}},
-        {"d", {Alphabet::D}},
-        {"t", {Alphabet::T}},
-        {"n", {Alphabet::N}},
-        {"l", {Alphabet::L}},
-        {"g", {Alphabet::G}},
-        {"k", {Alphabet::K}},
-        {"h", {Alphabet::H}},
-        {"j", {Alphabet::J}},
-        {"q", {Alphabet::Q}},
-        {"x", {Alphabet::X}},
-        {"zh", {Alphabet::ZH}},
-        {"ch", {Alphabet::CH}},
-        {"sh", {Alphabet::SH}},
-        {"r", {Alphabet::R}},
-        {"z", {Alphabet::Z}},
-        {"c", {Alphabet::C}},
-        {"s", {Alphabet::S}},
-        {"y", {Alphabet::Y}},
-        {"w", {Alphabet::W}},
-        {"a", {Alphabet::A}},
-        {"o", {Alphabet::O}},
-        {"e", {Alphabet::E}},
-        {"i", {Alphabet::I}},
-        {"u", {Alphabet::U}},
-        {"v", {Alphabet::V}},
-        {"ai", {Alphabet::AI}},
-        {"ei", {Alphabet::EI}},
-        {"ui", {Alphabet::UI}},
-        {"ao", {Alphabet::AO}},
-        {"ou", {Alphabet::OU}},
-        {"iu", {Alphabet::IU}},
-        {"ie", {Alphabet::IE}},
-        {"ve", {Alphabet::VE}},
-        {"er", {Alphabet::ER}},
-        {"an", {Alphabet::AN}},
-        {"en", {Alphabet::EN}},
-        {"in", {Alphabet::IN}},
-        {"un", {Alphabet::UN}},
-        //{"vn", {Alphabet::VN}},
-        {"ang", {Alphabet::ANG}},
-        {"eng", {Alphabet::ENG}},
-        {"ing", {Alphabet::ING}},
-        {"ong", {Alphabet::ONG}}
+        {"b", Alphabet::B},
+        {"p", Alphabet::P},
+        {"m", Alphabet::M},
+        {"f", Alphabet::F},
+        {"d", Alphabet::D},
+        {"t", Alphabet::T},
+        {"n", Alphabet::N},
+        {"l", Alphabet::L},
+        {"g", Alphabet::G},
+        {"k", Alphabet::K},
+        {"h", Alphabet::H},
+        {"j", Alphabet::J},
+        {"q", Alphabet::Q},
+        {"x", Alphabet::X},
+        {"zh", Alphabet::ZH},
+        {"ch", Alphabet::CH},
+        {"sh", Alphabet::SH},
+        {"r", Alphabet::R},
+        {"z", Alphabet::Z},
+        {"c", Alphabet::C},
+        {"s", Alphabet::S},
+        {"y", Alphabet::Y},
+        {"w", Alphabet::W},
+        {"a", Alphabet::A},
+        {"o", Alphabet::O},
+        {"e", Alphabet::E},
+        {"i", Alphabet::I},
+        {"u", Alphabet::U},
+        {"v", Alphabet::V},
+        {"ai", Alphabet::AI},
+        {"ei", Alphabet::EI},
+        {"ui", Alphabet::UI},
+        {"ao", Alphabet::AO},
+        {"ou", Alphabet::OU},
+        {"iu", Alphabet::IU},
+        {"ie", Alphabet::IE},
+        {"ve", Alphabet::VE},
+        {"er", Alphabet::ER},
+        {"an", Alphabet::AN},
+        {"en", Alphabet::EN},
+        {"in", Alphabet::IN},
+        {"un", Alphabet::UN},
+        //{"vn", Alphabet::VN},
+        {"ang", Alphabet::ANG},
+        {"eng", Alphabet::ENG},
+        {"ing", Alphabet::ING},
+        {"ong", Alphabet::ONG}
     });
 }
 
-struct AlphaMark
-{
-    string_view s;
-    Alphabet a; 
-    size_t start_pos;
-    size_t len;  
-    //const string_view& src;
-};
 
-struct MarkKey {
-    size_t start_pos;
-    size_t len;  
-}
 // struct PinyinGraphNode {
 //     string_view str;
 //     size_t start, end;
@@ -692,29 +681,28 @@ struct MarkKey {
 // }
 
 const int MaxAlphabetLen = 3;
-bool PinyinParser::hasValidAlphabet(const string& src, int start,  vector<AlphaMark>& m) {
-    for (int i=1; i<=MaxAlphabetLen && start+i-1 < src.size(); ++i) {
-        auto s = string_view(src, i);
-        if (_alphabet_map.contains(s)) {
-            m.emplace_back(AlphaMark{s, _alphabet_map[s], start, i, });
-        }
-    }
-}
+// bool PinyinParser::hasValidAlphabet(const string& src, int start,  vector<AlphaMark>& m) {
+//     for (int i=1; i<=MaxAlphabetLen && start+i-1 < src.size(); ++i) {
+//         auto s = string_view(src, i);
+//         if (_alphabet_map.contains(s)) {
+//             m.emplace_back(AlphaMark{s, _alphabet_map[s], start, i, });
+//         }
+//     }
+// }
 
-Graph<AlphaMark*> PinyinParser::ParseToGraph(const string& src) {
-    Graph<AlphaMark, MarkKey> g();
+void PinyinParser::ParseToGraph(const string& src, Graph<AlphaMark, MarkKey> g) {
     auto table = g.GetTable();
     auto cur_node = &g.GetRoot();
     size_t start = 0;
     while (start < src.size()) {
         for (int i=1; i<=MaxAlphabetLen && start+i-1 < src.size(); ++i) {
-            auto s = string_view(src, i);
-            if (_alphabet_map.contains(s)) {
+            auto s = string_view(src.c_str(), i);
+            if (_alphabet_map.contains(s)) { // valid alpha
                 const MarkKey key{start,i};
                 if (table.contains(key)) { //already exist
-                    cur_node->AddLink(table[key]);
+                    cur_node->AddLink(&table[key]);
                 } else { //new node
-                    cur_node->AddLink(g.AddNode(key, {s, _alphabetMap[s], start, i}));
+                    cur_node->AddLink(g.AddNode(key, AlphaMark{{start, i}, {s, _alphabet_map[s]}}));
                 }
                 
             }
@@ -722,8 +710,6 @@ Graph<AlphaMark*> PinyinParser::ParseToGraph(const string& src) {
 
         ++start;
     }
-    }
-    
 }
 
 
@@ -774,6 +760,7 @@ vector<PinyinVec> PinyinParser::Parse(const string &s)
 }
 
 int main() {
-    auto mp = Pinyin::getBaseMap();
+    Pinyin::PinyinParser p;
+    spdlog::info("inited, ");
     return 0;
 }

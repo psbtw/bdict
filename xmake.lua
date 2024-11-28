@@ -1,5 +1,6 @@
 set_languages("c++20")
 set_config("mode", "debug")
+--add_cxxflags("--verbose")
 target("a.out")
     set_kind("binary")
     add_files( "pinyinEncoder/*.cpp")
