@@ -372,7 +372,7 @@ PinyinParser::PinyinParser() {
         {"li", {Initial::L, Final::I, FuzzyFlag::None}},
         {"legn", {Initial::L, Final::ENG, FuzzyFlag::CommonTypo}},
         {"leng", {Initial::L, Final::ENG, FuzzyFlag::None}},
-        {"len", {Initial::L, Final::ENG, FuzzyFlag::EN_ENG}},
+        {"end_pos", {Initial::L, Final::ENG, FuzzyFlag::EN_ENG}},
         {"lei", {Initial::L, Final::EI, FuzzyFlag::None}},
         {"le", {Initial::L, Final::E, FuzzyFlag::None}},
         {"lao", {Initial::L, Final::AO, FuzzyFlag::None}},
@@ -690,25 +690,36 @@ const int MaxAlphabetLen = 3;
 //     }
 // }
 
-void PinyinParser::ParseToGraph(const string& src, Graph<AlphaMark, MarkKey> g) {
+void PinyinParser::ParseToGraph(Graph<AlphaMark, MarkKey>& g, const string& src, size_t start_pos, GraphNode<AlphaMark>* cur) {
+    if (start_pos >= src.size()) {
+        return;
+    }
     auto table = g.GetTable();
-    auto cur_node = &g.GetRoot();
-    size_t start = 0;
+    auto cur_node = cur;
+    if (cur_node == nullptr) {
+        cur_node = &g.GetRoot();
+    }
+    size_t start = start_pos;
     while (start < src.size()) {
-        for (int i=1; i<=MaxAlphabetLen && start+i-1 < src.size(); ++i) {
-            auto s = string_view(src.c_str(), i);
-            if (_alphabet_map.contains(s)) { // valid alpha
-                const MarkKey key{start,i};
-                if (table.contains(key)) { //already exist
-                    cur_node->AddLink(&table[key]);
-                } else { //new node
-                    cur_node->AddLink(g.AddNode(key, AlphaMark{{start, i}, {s, _alphabet_map[s]}}));
-                }
-                
+        for (int i=MaxAlphabetLen; i>0 && start+i <= src.size(); --i) {
+            auto s = string_view(&src[start], i);
+            if (_parse_ref.contains(s)) { // valid alpha
+                for (auto& v : _parse_ref[s]) {
+                    const MarkKey key{start,start+v.s.size()}; // 【start， end）
+                    if (table.contains(key)) { //already exist
+                        cur_node->AddLink(&table[key]);
+                        return; //same start, same iteration, certainly same end, so just return, actually this means a joined node.
+                    } else { //new node
+                        cur_node->AddLink(g.AddNode(key, AlphaMark{key, v}));
+                        ParseToGraph(g, src, start+v.s.size(), cur_node->links.back()); // recrusive, cur_node move to newly added
+                    }
+                    
+                }                  
+            } else { //not in pre-calculated map
+                // do nothing
             }
         } //tried all 3, should dispatch to different cur_node to continue
-
-        ++start;
+        ++start; 
     }
 }
 
@@ -744,8 +755,8 @@ const size_t SyllableMaxLen = 6;
 vector<PinyinVec> PinyinParser::Parse(const string &s)
 {
     auto ret = vector<PinyinVec>();
-    auto len = s.size();
-    for (auto i=0; i<len; ++i) {
+    auto end_pos = s.size();
+    for (auto i=0; i<end_pos; ++i) {
         for (auto j=i; j<i+SyllableMaxLen; ++j) {
             
         }
@@ -760,7 +771,20 @@ vector<PinyinVec> PinyinParser::Parse(const string &s)
 }
 
 int main() {
+    using Pinyin::AlphaMark;
+    using Pinyin::MarkKey;
+
+    init_logger("./log.txt");
     Pinyin::PinyinParser p;
-    spdlog::info("inited, ");
+    string s("guangan");
+    spdlog::info("try parse, %s", s);
+    Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
+    p.ParseToGraph(g, s);
+    auto res = g.DFS_ALL();
+    spdlog::info("got res: ");
+    for (auto&v : *res) {
+        spdlog::info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+    }
+    delete res;
     return 0;
 }

@@ -13,7 +13,7 @@ class PinyinParser {
 private:
     PinyinMap _all_map, _base_map, _fuzzy_map;
     AlphabetMap _alphabet_map;
-    ParseMap _parse_map;
+    ParseRef _parse_ref;
     
 
 public:
@@ -29,7 +29,7 @@ public:
         // }
         return ret;
     }
-    void ParseToGraph(const string& src, Graph<AlphaMark, MarkKey> g);
+    void ParseToGraph(Graph<AlphaMark, MarkKey>& g, const string& src,  size_t start_pos = 0, GraphNode<AlphaMark>* cur = nullptr);
 
 private:
     void splitBaseMap();
@@ -38,7 +38,7 @@ private:
     void init_base_map();
     void initAlphabetMap();
     void init_parse_map(){
-        _parse_map = move(ParseMap{
+        _parse_ref = move(ParseRef{
             {"b", {{"b"}}},
             {"p", {{"p"}}},
             {"m", {{"m"}}},

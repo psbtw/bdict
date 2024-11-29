@@ -205,14 +205,14 @@ struct AlphaData {
     bool fz = true;
 };
 
-using ParseMap = unordered_map<string, vector<AlphaData>>;
+using ParseRef = unordered_map<string_view, vector<AlphaData>>;
 
 struct MarkKey {
     size_t start_pos;
-    size_t len; 
+    size_t end_pos; 
     bool operator==(const MarkKey& b) const {
         return start_pos == b.start_pos &&
-            len == b.len;
+            end_pos == b.end_pos;
     } 
 };
 
@@ -241,7 +241,7 @@ struct hash<Pinyin::MarkKey>{
         // return ((hash<string>()(k.first)
         //         ^ (hash<string>()(k.second) << 1)) >> 1)
         //         ^ (hash<int>()(k.third) << 1);
-        return (k.start_pos << 16) | k.len;
+        return (k.start_pos << 16) | k.end_pos;
     }
 };
 }
