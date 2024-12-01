@@ -214,6 +214,9 @@ struct MarkKey {
         return start_pos == b.start_pos &&
             end_pos == b.end_pos;
     } 
+    string toString() const {
+        return to_string(start_pos*1000+end_pos);
+    }
 };
 
 struct AlphaMark
@@ -221,6 +224,9 @@ struct AlphaMark
     MarkKey key;
     AlphaData data;  
     //const string_view& src;
+    string toString() {
+        return string(data.s);
+    }
 };
 
 }
