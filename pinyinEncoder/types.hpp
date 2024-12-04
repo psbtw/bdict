@@ -5,7 +5,8 @@
 #include <string>
 
 namespace Pinyin {
-    enum class Initial : char {
+
+enum class Initial : char {
     Invalid = 0,
     B = 1,
     P,
@@ -210,9 +211,11 @@ using ParseRef = unordered_map<string_view, vector<AlphaData>>;
 struct MarkKey {
     size_t start_pos;
     size_t end_pos; 
+    Alphabet a;
     bool operator==(const MarkKey& b) const {
         return start_pos == b.start_pos &&
-            end_pos == b.end_pos;
+            end_pos == b.end_pos && 
+            a == b.a;
     } 
     string toString() const {
         return to_string(start_pos*1000+end_pos);
@@ -247,8 +250,11 @@ struct hash<Pinyin::MarkKey>{
         // return ((hash<string>()(k.first)
         //         ^ (hash<string>()(k.second) << 1)) >> 1)
         //         ^ (hash<int>()(k.third) << 1);
-        return (k.start_pos << 16) | k.end_pos;
+        return (size_t)(k.a) << 32 | (k.start_pos << 16) | (k.end_pos << 0 );
     }
 };
 }
 
+namespace Pinyin {
+
+}

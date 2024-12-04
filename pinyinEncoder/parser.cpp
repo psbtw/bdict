@@ -613,7 +613,9 @@ namespace Pinyin {
 
 PinyinParser::PinyinParser() {
     init_parse_map();
+    SetFuzzy();
 }
+
 void PinyinParser::splitBaseMap() {
     for (auto& e : _all_map) {
         if (e.second.fz == FuzzyFlag::None || e.second.fz | (FuzzyFlag::CommonTypo))[[likely]] {
@@ -693,7 +695,7 @@ void logGraph(Graph<AlphaMark, MarkKey>& g) {
     }
 }
 
-void PinyinParser::ParseToGraph(Graph<AlphaMark, MarkKey>& g, const string& src, size_t start, GraphNode<AlphaMark>* cur_node) {
+void PinyinParser::ParseToGraph(PinyinGraph& g, const string& src, size_t start, PinyinGraphNode* cur_node) {
     if (start >= src.size()) {
         return;
     }
@@ -707,17 +709,17 @@ void PinyinParser::ParseToGraph(Graph<AlphaMark, MarkKey>& g, const string& src,
         auto s = string_view(&src[start], i);
         if (_parse_ref.contains(s)) { // valid alpha
             for (auto& v : _parse_ref[s]) {
-                const MarkKey key{start,start+v.s.size()}; // 【start， end）
+                const MarkKey key{start,start+v.s.size(), v.a}; // 【start， end）
                 if (table.contains(key)) { //already exist
-                    cur_node->AddLink((table[key])); //different address from ori node, but the value is the same
+                    cur_node->AddToNode((table[key])); //different address from ori node, but the value is the same
                     spdlog::info("get key {} data at {}", key.toString(), fmt::ptr((table[key])));
                     continue; //same start, same iteration, certainly same end, so just return, actually this means a joined node.
                 } else { //new node
                     auto ptr = g.AddNode(key, AlphaMark{key, v});
                     spdlog::info("added new node {} at {}", key.toString(), fmt::ptr(ptr));
-                    cur_node->AddLink(ptr);
+                    cur_node->AddToNode(ptr);
                     //logGraph(g);
-                    ParseToGraph(g, src, start+v.s.size(), cur_node->links.back()); // recrusive, cur_node move to newly added
+                    ParseToGraph(g, src, start+v.s.size(), cur_node->to_nodes.back()); // recrusive, cur_node move to newly added
                 }  
             }  
             return;  // nest stituations are already defined in _parse_map, so if contains, all have already been processed above              
@@ -725,6 +727,7 @@ void PinyinParser::ParseToGraph(Graph<AlphaMark, MarkKey>& g, const string& src,
             // do nothing
         }
     }
+
 }
 
 
@@ -754,7 +757,6 @@ vector<vector<Alphabet>> PinyinParser::StringToAlphabet(std::string &str)
 //     }
 // }
 
-// luxian
 const size_t SyllableMaxLen = 6;
 vector<PinyinVec> PinyinParser::Parse(const string &s)
 {
@@ -784,11 +786,13 @@ int main(int argc, char* argv[]) {
     spdlog::flush_on(spdlog::level::info);
     Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
     p.ParseToGraph(g, s);
+    p.ApplyFuzzyForGraph(g);
     auto res = g.DFS_ALL();
     spdlog::info("got res: ");
     for (auto&v : *res) {
         spdlog::info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
     }
     delete res;
+    std::cout<<"done.\n";
     return 0;
 }
