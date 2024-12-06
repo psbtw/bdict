@@ -783,7 +783,7 @@ int main(int argc, char* argv[]) {
     Pinyin::PinyinParser p;
     string s(argv[1]);
     spdlog::info("try parse: {}", s);
-    spdlog::flush_on(spdlog::level::info);
+    spdlog::flush_on(spdlog::level::trace);
     Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
     p.ParseToGraph(g, s);
     p.ApplyFuzzyForGraph(g);
