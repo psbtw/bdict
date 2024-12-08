@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/a.out",
             //"preLaunchTask": "xmake-build",
-            "args": ["diguoshidai"],
+            "args": ["dingding"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

@@ -36,6 +36,7 @@ public:
     }
     void ParseToGraph(PinyinGraph& g, const string& src,  size_t start_pos = 0, PinyinGraphNode* cur = nullptr);
     void ApplyFuzzyForGraph(PinyinGraph& g) {
+        log_trace("applying fuzzy...");
         g.BFS(bind(&PinyinParser::addFuzzyNode, this, g, placeholders::_1));
     }
 
@@ -90,9 +91,9 @@ private:
             {"ong", {{"ong", Alphabet::ONG}}},
             {"ang", {{"ang", Alphabet::ANG}, {"an", Alphabet::AN}}}, 
             {"an", {{"an", Alphabet::AN}, {"a", Alphabet::A}}}, 
-            {"eng", {{"eng", Alphabet::ENG}, {"en", Alphabet::EN}}}, 
+            {"eng", {{"eng", Alphabet::ENG}, {"en", Alphabet::EN, false}}}, 
             {"en", {{"en", Alphabet::EN}, {"e", Alphabet::E}}}, 
-            {"ing", {{"ing", Alphabet::ING}, {"in", Alphabet::IN}}}, 
+            {"ing", {{"ing", Alphabet::ING}, {"in", Alphabet::IN, false}}}, 
             {"in", {{"in", Alphabet::IN}, {"i", Alphabet::I}}}, 
         });
     }
@@ -113,7 +114,7 @@ private:
     }
 
     void addFuzzyNode(PinyinGraph& g, PinyinGraphNode* node) {
-        if (_fz_map.contains(node->data.key.a)) {
+        if (node->data.data.fz && _fz_map.contains(node->data.key.a)) {
             MarkKey newKey(node->data.key);
             newKey.a = _fz_map[node->data.key.a];
             auto ptr = g.AddNode(newKey, node->data);

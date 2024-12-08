@@ -689,9 +689,9 @@ const int MaxAlphabetLen = 3;
 // }
 
 void logGraph(Graph<AlphaMark, MarkKey>& g) {
-    spdlog::info("logging graph:");
+    log_info("logging graph:");
     for (auto& e : g.GetTable()) {
-        spdlog::info("key {} data at {}", e.first.toString(), fmt::ptr(&e.second));
+        log_info("key {} data at {}", e.first.toString(), fmt::ptr(&e.second));
     }
 }
 
@@ -712,11 +712,11 @@ void PinyinParser::ParseToGraph(PinyinGraph& g, const string& src, size_t start,
                 const MarkKey key{start,start+v.s.size(), v.a}; // 【start， end）
                 if (table.contains(key)) { //already exist
                     cur_node->AddToNode((table[key])); //different address from ori node, but the value is the same
-                    spdlog::info("get key {} data at {}", key.toString(), fmt::ptr((table[key])));
+                    log_info("get key {} data at {}", key.toString(), fmt::ptr((table[key])));
                     continue; //same start, same iteration, certainly same end, so just return, actually this means a joined node.
                 } else { //new node
                     auto ptr = g.AddNode(key, AlphaMark{key, v});
-                    spdlog::info("added new node {} at {}", key.toString(), fmt::ptr(ptr));
+                    log_info("added new node {} at {}", key.toString(), fmt::ptr(ptr));
                     cur_node->AddToNode(ptr);
                     //logGraph(g);
                     ParseToGraph(g, src, start+v.s.size(), cur_node->to_nodes.back()); // recrusive, cur_node move to newly added
@@ -780,19 +780,25 @@ int main(int argc, char* argv[]) {
     using Pinyin::MarkKey;
 
     init_logger("./log.txt");
+    spdlog::set_level(spdlog::level::trace);
     Pinyin::PinyinParser p;
     string s(argv[1]);
-    spdlog::info("try parse: {}", s);
+    log_info("try parse: {}", s);
     spdlog::flush_on(spdlog::level::trace);
     Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
     p.ParseToGraph(g, s);
-    p.ApplyFuzzyForGraph(g);
     auto res = g.DFS_ALL();
-    spdlog::info("got res: ");
+    log_info("got res: ");
     for (auto&v : *res) {
-        spdlog::info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
     }
-    delete res;
+    p.ApplyFuzzyForGraph(g);
+    auto res2 = g.DFS_ALL();
+    log_info("res after fuzzy: ");
+    for (auto&v : *res2) {
+        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+    }
+    delete res, res2;
     std::cout<<"done.\n";
     return 0;
 }
