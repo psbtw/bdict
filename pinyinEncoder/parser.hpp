@@ -36,8 +36,8 @@ public:
     }
     void ParseToGraph(PinyinGraph& g, const string& src,  size_t start_pos = 0, PinyinGraphNode* cur = nullptr);
     void ApplyFuzzyForGraph(PinyinGraph& g) {
-        log_trace("applying fuzzy...");
-        g.BFS(bind(&PinyinParser::addFuzzyNode, this, g, placeholders::_1));
+        spdlog::trace("applying fuzzy to g &{}", fmt::ptr(&g));
+        g.BFS(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1));
     }
 
 private:
@@ -113,11 +113,12 @@ private:
         });
     }
 
-    void addFuzzyNode(PinyinGraph& g, PinyinGraphNode* node) {
+    void addFuzzyNode(PinyinGraph* g, PinyinGraphNode* node) {
+        spdlog::trace("&g = {}", fmt::ptr(g));
         if (node->data.data.fz && _fz_map.contains(node->data.key.a)) {
             MarkKey newKey(node->data.key);
             newKey.a = _fz_map[node->data.key.a];
-            auto ptr = g.AddNode(newKey, node->data);
+            auto ptr = g->AddNode(newKey, node->data);
             ptr->CopyRelation(node);
         }
     }
