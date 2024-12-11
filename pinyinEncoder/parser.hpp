@@ -18,6 +18,7 @@ private:
     PinyinMap _all_map, _base_map, _fuzzy_map;
     AlphabetMap _alphabet_map;
     ParseRef _parse_ref;
+    unordered_map<Alphabet,string_view> _alpha_ref;
     unordered_map<Alphabet, Alphabet> _fz_map;
     
 
@@ -36,8 +37,8 @@ public:
     }
     void ParseToGraph(PinyinGraph& g, const string& src,  size_t start_pos = 0, PinyinGraphNode* cur = nullptr);
     void ApplyFuzzyForGraph(PinyinGraph& g) {
-        spdlog::trace("applying fuzzy to g &{}", fmt::ptr(&g));
-        g.BFS(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1));
+        g.BFS_LEVEL(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1));
+        spdlog::trace("fuzzy done.");
     }
 
 private:
@@ -96,6 +97,58 @@ private:
             {"ing", {{"ing", Alphabet::ING}, {"in", Alphabet::IN, false}}}, 
             {"in", {{"in", Alphabet::IN}, {"i", Alphabet::I}}}, 
         });
+
+        _alpha_ref = move(unordered_map<Alphabet, string_view>{
+            {Alphabet::B, "b"},
+            {Alphabet::P, "p"},
+            {Alphabet::M, "m"},
+            {Alphabet::F, "f"},
+            {Alphabet::D, "d"},
+            {Alphabet::T, "t"},
+            {Alphabet::N, "n"},
+            {Alphabet::L, "l"},
+            {Alphabet::G, "g"},
+            {Alphabet::K, "k"},
+            {Alphabet::H, "h"},
+            {Alphabet::J, "j"},
+            {Alphabet::Q, "q"},
+            {Alphabet::X, "x"},
+            {Alphabet::ZH, "zh"},
+            {Alphabet::CH, "ch"},
+            {Alphabet::SH, "sh"},
+            {Alphabet::R, "r"},
+            {Alphabet::Z, "z"},
+            {Alphabet::C, "c"},
+            {Alphabet::S, "s"},
+            {Alphabet::Y, "y"},
+            {Alphabet::W, "w"},
+            {Alphabet::A, "a"},
+            {Alphabet::O, "o"},
+            {Alphabet::E, "e"},
+            {Alphabet::I, "i"},
+            {Alphabet::U, "u"},
+            {Alphabet::V, "v"},
+            {Alphabet::AI, "ai"},
+            {Alphabet::EI, "ei"},
+            {Alphabet::UI, "ui"},
+            {Alphabet::AO, "ao"},
+            {Alphabet::OU, "ou"},
+            {Alphabet::IU, "iu"},
+            {Alphabet::IE, "ie"},
+            {Alphabet::VE, "ve"},
+            {Alphabet::ER, "er"},
+            {Alphabet::E, "e"},
+            {Alphabet::UN, "un"},
+            {Alphabet::U, "u"},
+            {Alphabet::ONG, "ong"},
+            {Alphabet::ANG, "ang"},
+            {Alphabet::AN, "an"},
+            {Alphabet::ENG, "eng"},
+            {Alphabet::EN, "en"},
+            {Alphabet::ING, "ing"},
+            {Alphabet::IN, "in"},
+        });
+
     }
 
     void SetFuzzy() { //consider dynamic configurations in later verison
@@ -114,12 +167,13 @@ private:
     }
 
     void addFuzzyNode(PinyinGraph* g, PinyinGraphNode* node) {
-        spdlog::trace("&g = {}", fmt::ptr(g));
         if (node->data.data.fz && _fz_map.contains(node->data.key.a)) {
-            MarkKey newKey(node->data.key);
+            MarkKey newKey(node->data.key);            
             newKey.a = _fz_map[node->data.key.a];
             auto ptr = g->AddNode(newKey, node->data);
+            ptr->data.data.s = _alpha_ref[newKey.a];
             ptr->CopyRelation(node);
+            spdlog::trace("copied node {} ", node->data.data.s);
         }
     }
 
