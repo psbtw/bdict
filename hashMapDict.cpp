@@ -1,11 +1,12 @@
-#include "HashMapDict.hpp"
+#include "hashMapDict.hpp"
 #include <string>
 #include <vector>
 #include <concepts>
-#include "pinyinEncoder/consts.hpp"
+#include "pinyinEncoder/types.hpp"
 #include "wordNode.hpp"
 #include "hashMapDict.hpp"
 #include <iostream>
+#include "pinyinEncoder/parser.hpp"
 
 template <std::totally_ordered K, std::totally_ordered V>
 HashMapDict<K, V>::HashMapDict()
@@ -13,7 +14,7 @@ HashMapDict<K, V>::HashMapDict()
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K,V>::HashMapDict(K k, V v)
+HashMapDict<K,V>::HashMapDict(K& k, V& v)
 {
     key = k;
     data.emplace_back(v);
@@ -21,7 +22,7 @@ HashMapDict<K,V>::HashMapDict(K k, V v)
 }
 
 template<std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K,V>::HashMapDict(K k)
+HashMapDict<K,V>::HashMapDict(K& k)
 {
     key = k;
 }
@@ -34,23 +35,24 @@ HashMapDict<K,V>::HashMapDict(K k)
 // }
 
 template <std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K,V> *HashMapDict<K, V>::find(std::vector<K> key, int& idx)
+HashMapDict<K,V>* HashMapDict<K, V>::find(std::vector<K>& key, int& idx) //find nearest match
 {
-    HashMapDict<K,V>* tmp = this, sub = this->sub;
+    HashMapDict<K,V>* tmp = this;
+    auto sub = &this->sub;
     idx = 0;
     for (; idx<key.size(); ++idx) {
-        if (!sub ||!sub->count(key[idx]) ) {
+        if (!sub->count(key[idx]) ) {
             return tmp;
         }
-        tmp = sub;
-        sub = tmp->sub[key[idx]];
+        tmp = &sub->at(key[idx]);
+        sub = &tmp->sub;
     }
     return tmp;
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
 
-bool HashMapDict<K, V>::insert(std::vector<K>, V data)
+bool HashMapDict<K, V>::Insert(std::vector<K>& key, V&& data)
 {
     int idx;
     auto ptr = this->find(key, idx);
@@ -59,8 +61,8 @@ bool HashMapDict<K, V>::insert(std::vector<K>, V data)
         // if (ptr->sub.size() == 0) {
         //     ptr->sub = std::unordered_map<K, HashMapDict<K,V>*>();
         // }
-        ptr->sub[key[idx]] = HashMapDict<K,V>(key[idx]);
-        ptr = ptr->sub[key[idx]];
+        ptr->sub[key[idx]] = HashMapDict(key[idx]);
+        ptr = &ptr->sub[key[idx]];
     }
     // found
     if (idx == key.size()) {
@@ -72,6 +74,21 @@ bool HashMapDict<K, V>::insert(std::vector<K>, V data)
 
 int main(){
     //auto dict = HashMapDict<Alphabet, WordNode<std::string> >;
-    HashMapDict<Alphabet, WordNode<std::string> > dict;
+    HashMapDict<K_t, D_t> dict;
+    auto parsedEntries = parseInput("./resources/dict.yml");
+
+    Pinyin::PinyinParser parser;
+
+    // Output the parsed entries
+    for (const auto& entry : *parsedEntries) {
+        std::cout << "Word: " << entry.word << ", Pinyin: ";
+        vector<Pinyin::Alphabet> va;
+        parser.StringVecToAlphaVec(entry.pinyin, va);
+        std::cout << ", Frequency: " << entry.freq << std::endl;
+        dict.Insert(va, {entry.word, entry.freq});
+    }
+    
+    delete parsedEntries;
+
     std::cout << "dict inited\n";
 }

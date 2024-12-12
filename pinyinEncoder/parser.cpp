@@ -687,6 +687,29 @@ const int MaxAlphabetLen = 3;
 //         }
 //     }
 // }
+void PinyinParser::DirectParseToVec(const string& src, vector<Alphabet>& dst) {
+    if (!src.size()) {
+        return;
+    }
+    size_t start = 0;
+    while(start < src.length()) {
+        size_t i = MaxAlphabetLen < src.size() - start ? MaxAlphabetLen : src.size() - start; 
+        for (; i>0; --i) {
+            auto s = string_view(&src[start], i);
+            if (_parse_ref.contains(s)) { // valid alpha
+                dst.emplace_back(_parse_ref[s][0].a);
+                start += i; //commit
+                break;
+                //direct match only take the full match, because src is supposed to be single syllable
+            } 
+        }
+        if (i == 0) {
+            log_trace("invalid s: {}", src[start]);
+            break;
+        }
+    }
+    
+}
 
 void logGraph(Graph<AlphaMark, MarkKey>& g) {
     log_info("logging graph:");
@@ -774,31 +797,31 @@ vector<PinyinVec> PinyinParser::Parse(const string &s)
 
 }
 
-int main(int argc, char* argv[]) {
-    std::cout<<"start...\n";
-    using Pinyin::AlphaMark;
-    using Pinyin::MarkKey;
+// int main(int argc, char* argv[]) {
+//     std::cout<<"start...\n";
+//     using Pinyin::AlphaMark;
+//     using Pinyin::MarkKey;
 
-    init_logger("./log.txt");
-    spdlog::set_level(spdlog::level::trace);
-    Pinyin::PinyinParser p;
-    string s(argv[1]);
-    log_info("try parse: {}", s);
-    spdlog::flush_on(spdlog::level::trace);
-    Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
-    p.ParseToGraph(g, s);
-    auto res = g.DFS_ALL();
-    log_info("got res: ");
-    for (auto&v : *res) {
-        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
-    }
-    p.ApplyFuzzyForGraph(g);
-    auto res2 = g.DFS_ALL();
-    log_info("res after fuzzy: ");
-    for (auto&v : *res2) {
-        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
-    }
-    delete res, res2;
-    std::cout<<"done.\n";
-    return 0;
-}
+//     init_logger("./log.txt");
+//     spdlog::set_level(spdlog::level::trace);
+//     Pinyin::PinyinParser p;
+//     string s(argv[1]);
+//     log_info("try parse: {}", s);
+//     spdlog::flush_on(spdlog::level::trace);
+//     Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
+//     p.ParseToGraph(g, s);
+//     auto res = g.DFS_ALL();
+//     log_info("got res: ");
+//     for (auto&v : *res) {
+//         log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+//     }
+//     p.ApplyFuzzyForGraph(g);
+//     auto res2 = g.DFS_ALL();
+//     log_info("res after fuzzy: ");
+//     for (auto&v : *res2) {
+//         log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+//     }
+//     delete res, res2;
+//     std::cout<<"done.\n";
+//     return 0;
+// }

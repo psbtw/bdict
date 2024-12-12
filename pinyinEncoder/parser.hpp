@@ -35,6 +35,15 @@ public:
         // }
         return ret;
     }
+    
+    void DirectParseToVec(const string& src, vector<Alphabet>& dst);
+
+    void StringVecToAlphaVec(const vector<string>& src, vector<Alphabet>& dst) {
+        for (const auto& s : src) {
+            DirectParseToVec(s, dst);
+        }
+    }
+
     void ParseToGraph(PinyinGraph& g, const string& src,  size_t start_pos = 0, PinyinGraphNode* cur = nullptr);
     void ApplyFuzzyForGraph(PinyinGraph& g) {
         g.BFS_LEVEL(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1));
