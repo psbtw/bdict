@@ -32,8 +32,9 @@ public:
     HashMapDict(K& k,V& v);
     HashMapDict(K& k);
     //~HashMapDict();
-    HashMapDict* find(std::vector<K>& key, int&);
+    HashMapDict* find(const std::vector<K>& key, int&);
     bool Insert(std::vector<K>& key, V&& data);
+    vector<string_view> MatchWords(const vector<vector<Pinyin::Alphabet>>& key);
 };
 
 

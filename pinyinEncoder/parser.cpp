@@ -797,31 +797,31 @@ vector<PinyinVec> PinyinParser::Parse(const string &s)
 
 }
 
-// int main(int argc, char* argv[]) {
-//     std::cout<<"start...\n";
-//     using Pinyin::AlphaMark;
-//     using Pinyin::MarkKey;
+int test_parser(int argc, char* argv[]) {
+    std::cout<<"start...\n";
+    using Pinyin::AlphaMark;
+    using Pinyin::MarkKey;
 
-//     init_logger("./log.txt");
-//     spdlog::set_level(spdlog::level::trace);
-//     Pinyin::PinyinParser p;
-//     string s(argv[1]);
-//     log_info("try parse: {}", s);
-//     spdlog::flush_on(spdlog::level::trace);
-//     Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
-//     p.ParseToGraph(g, s);
-//     auto res = g.DFS_ALL();
-//     log_info("got res: ");
-//     for (auto&v : *res) {
-//         log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
-//     }
-//     p.ApplyFuzzyForGraph(g);
-//     auto res2 = g.DFS_ALL();
-//     log_info("res after fuzzy: ");
-//     for (auto&v : *res2) {
-//         log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
-//     }
-//     delete res, res2;
-//     std::cout<<"done.\n";
-//     return 0;
-// }
+    init_logger("./log.txt");
+    spdlog::set_level(spdlog::level::trace);
+    Pinyin::PinyinParser p;
+    string s(argv[1]);
+    log_info("try parse: {}", s);
+    spdlog::flush_on(spdlog::level::trace);
+    Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
+    p.ParseToGraph(g, s);
+    auto res = g.DFS_ALL();
+    log_info("got res: ");
+    for (auto&v : *res) {
+        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+    }
+    p.ApplyFuzzyForGraph(g);
+    auto res2 = g.DFS_ALL();
+    log_info("res after fuzzy: ");
+    for (auto&v : *res2) {
+        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+    }
+    delete res, res2;
+    std::cout<<"done.\n";
+    return 0;
+}

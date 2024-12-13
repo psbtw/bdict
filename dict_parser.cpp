@@ -27,7 +27,7 @@ std::vector<WordEntry>* parseInput(const std::string& filePath) {
         // Read the word
         lineStream >> entry.word;
         if (entry.word[0] == '#') {
-            spdlog::trace("meet comment: {}", entry.word);
+            //spdlog::trace("meet comment: {}", entry.word);
             continue;
         }
 
@@ -49,16 +49,6 @@ std::vector<WordEntry>* parseInput(const std::string& filePath) {
 }
 
 // int main() {
-// //     std::string input = R"(
-// // 盛弘股份	sheng hong gu fen	185
-// // 胜红清热胶囊	sheng hong qing re jiao nang	6
-// // 圣湖	sheng hu	400
-// // 圣胡安	sheng hu an	910
-// // 圣湖社区	sheng hu she qu	4
-// // 生化	sheng hua	11414
-// // 0
-// // 升华	sheng hua	101545
-// // )";
 
 //     auto parsedEntries = parseInput("./resources/dict.yml");
 
