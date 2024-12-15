@@ -72,12 +72,27 @@ bool HashMapDict<K, V>::Insert(std::vector<K>& key, V&& data)
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
-vector<string_view> HashMapDict<K, V>::MatchWords(const vector<vector<Pinyin::Alphabet>>& keys) {
-    vector<string_view> res
-    int idx = 0;
-    for (const auto& v : keys) {
-        auto 
+vector<string_view> HashMapDict<K, V>::MatchWords(const vector<vector<K>>& keys) {
+    SortedVector<V> res;
+    for (const auto& k : keys) {
+        int idx = 0;
+        auto ptr = find(k, idx);
+        if (idx == k.size())[[__glibc_likely]] {
+            for (auto& v : ptr->get_data().get_data()) {
+                res.insert(v);
+            }
+            log_trace("found exact match for key: {}, val: {}", k, ptr->get_data().get_data());
+        } else {
+            log_trace("didn't find exact match for key: {}", k);
+        }
     }
+    vector<string_view> ret(res.get_data().size());
+    auto iter = ret.begin();
+    for (const auto &node : res.get_data()) {
+        ret.emplace(iter++, node.data);
+    }
+    log_trace("convert done.");
+    return ret;
 }
 
 int main(int argc, char* argv[]){
@@ -126,10 +141,21 @@ int main(int argc, char* argv[]){
     }
     p.ApplyFuzzyForGraph(g);
     auto res2 = g.DFS_ALL();
+    vector<vector<K_t>> keys(res2->size());
+    auto key = keys.begin();
     log_info("res after fuzzy: ");
     for (auto&v : *res2) {
         log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* k){return string(k->data.s); }, ","));
+        vector<K_t> k(v.size());
+        auto it = k.begin();
+        for (const auto& m : v) {
+            k.emplace(it++, m->data.a);
+        }
+        keys.emplace(key++, k);
     }
+
+    //test match
+    auto cadidates = dict.MatchWords(keys);
     delete res, res2;
 
     std::cout<<"done.\n";

@@ -34,7 +34,11 @@ public:
     //~HashMapDict();
     HashMapDict* find(const std::vector<K>& key, int&);
     bool Insert(std::vector<K>& key, V&& data);
-    vector<string_view> MatchWords(const vector<vector<Pinyin::Alphabet>>& key);
+    vector<string_view> MatchWords(const vector<vector<K>>& keys);
+
+    SortedVector<V>& get_data() {
+        return data;
+    }
 };
 
 
