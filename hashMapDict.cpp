@@ -51,7 +51,7 @@ HashMapDict<K,V>* HashMapDict<K, V>::find(const std::vector<K>& key, int& idx) /
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
-bool HashMapDict<K, V>::Insert(std::vector<K>& key, V&& data)
+bool HashMapDict<K, V>::Insert(std::vector<K>& key, const V& data)
 {
     int idx;
     auto ptr = this->find(key, idx);
@@ -73,25 +73,32 @@ bool HashMapDict<K, V>::Insert(std::vector<K>& key, V&& data)
 
 template <std::totally_ordered K, std::totally_ordered V>
 vector<string_view> HashMapDict<K, V>::MatchWords(const vector<vector<K>>& keys) {
+    START(match_all)
     SortedVector<V> res;
     for (const auto& k : keys) {
+        START(match_1)
         int idx = 0;
         auto ptr = find(k, idx);
-        if (idx == k.size())[[__glibc_likely]] {
-            for (auto& v : ptr->get_data().get_data()) {
+        if (idx == k.size())[[__likely__]] {
+            for (auto& v : ptr->get_data().Vec()) {
                 res.insert(v);
             }
-            log_trace("found exact match for key: {}, val: {}", k, ptr->get_data().get_data());
+            log_trace("found exact match for key: {}, val: {}", parser.AlphabetVecToString(k), ptr->get_data().ToString());
         } else {
-            log_trace("didn't find exact match for key: {}", k);
+            log_trace("didn't find exact match for key: {}", parser.AlphabetVecToString(k));
         }
+        END(match_1)
+        LOG(match_1)
     }
-    vector<string_view> ret(res.get_data().size());
-    auto iter = ret.begin();
-    for (const auto &node : res.get_data()) {
-        ret.emplace(iter++, node.data);
+    vector<string_view> ret(res.Vec().size());
+    stringstream s;
+    for (int i = 0; i < ret.size(); ++i) {
+        ret[i] = res.Vec()[i].data;
+        s << ret[i] << ", ";
     }
-    log_trace("convert done.");
+    END(match_all)
+    LOG(match_all)
+    log_trace("convert done, ret: {}", s.str());
     return ret;
 }
 
@@ -118,7 +125,8 @@ int main(int argc, char* argv[]){
         vector<Pinyin::Alphabet> va;
         parser.StringVecToAlphaVec(entry.pinyin, va);
         //std::cout << ", Frequency: " << entry.freq << std::endl;
-        dict.Insert(va, {entry.word, entry.freq});
+        D_t w(entry.word, entry.freq);
+        dict.Insert(va, w);
     }
     END(BUILD_DICT)
     LOG(BUILD_DICT)
@@ -137,21 +145,21 @@ int main(int argc, char* argv[]){
     auto res = g.DFS_ALL();
     log_info("got res: ");
     for (auto&v : *res) {
-        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* k){return string(k->data.s); }, ","));
+        log_info("dfs res: {}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* const &k){return string(k->data.s); }, ","));
     }
     p.ApplyFuzzyForGraph(g);
     auto res2 = g.DFS_ALL();
     vector<vector<K_t>> keys(res2->size());
     auto key = keys.begin();
     log_info("res after fuzzy: ");
-    for (auto&v : *res2) {
-        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* k){return string(k->data.s); }, ","));
+    for (int i = 0; i<keys.size(); ++i) {
+        const auto& v = (*res2)[i];
+        log_info("route: {}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* const &k){return string(k->data.s); }, ","));
         vector<K_t> k(v.size());
-        auto it = k.begin();
-        for (const auto& m : v) {
-            k.emplace(it++, m->data.a);
+        for (int j = 0; j<k.size(); ++j) {
+            k[j] = v[j]->data.a;
         }
-        keys.emplace(key++, k);
+        keys[i] = k;
     }
 
     //test match

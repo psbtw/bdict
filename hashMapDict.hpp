@@ -6,6 +6,7 @@
 #include "../bcommon/common/debug.hpp"
 #include "wordNode.hpp"
 #include "pinyinEncoder/types.hpp"
+#include "pinyinEncoder/parser.hpp"
 
 template<typename T>
 concept ArrayType = requires(T t){
@@ -27,18 +28,20 @@ private:
     K key;
     SortedVector<V> data;
     std::unordered_map<K,HashMapDict<K,V>> sub;
+    inline static Pinyin::PinyinParser parser;
 public:
     HashMapDict();
     HashMapDict(K& k,V& v);
     HashMapDict(K& k);
     //~HashMapDict();
     HashMapDict* find(const std::vector<K>& key, int&);
-    bool Insert(std::vector<K>& key, V&& data);
+    bool Insert(std::vector<K>& key, const V& data);
     vector<string_view> MatchWords(const vector<vector<K>>& keys);
 
     SortedVector<V>& get_data() {
         return data;
     }
+    //SetParser(Pinyin::PinyinParser* parser) {parser = parser;}
 };
 
 

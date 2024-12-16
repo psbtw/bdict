@@ -50,6 +50,15 @@ public:
         spdlog::trace("fuzzy done.");
     }
 
+    string AlphabetVecToString(const vector<Alphabet>& v, const char* sep = ",") {
+        auto ss = stringstream();
+        for (int i=0; i<v.size(); ++i) {
+            ss << _alpha_ref[v[i]] << sep;
+        }
+        //ss << endl;
+        return ss.str();
+    }
+
 private:
     void splitBaseMap();
     const PinyinMap& getAllMap();
@@ -181,6 +190,7 @@ private:
             newKey.a = _fz_map[node->data.key.a];
             auto ptr = g->AddNode(newKey, node->data);
             ptr->data.data.s = _alpha_ref[newKey.a];
+            ptr->data.data.a = newKey.a;
             ptr->CopyRelation(node);
             spdlog::trace("copied node {} ", node->data.data.s);
         }

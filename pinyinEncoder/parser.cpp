@@ -813,13 +813,13 @@ int test_parser(int argc, char* argv[]) {
     auto res = g.DFS_ALL();
     log_info("got res: ");
     for (auto&v : *res) {
-        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
     }
     p.ApplyFuzzyForGraph(g);
     auto res2 = g.DFS_ALL();
     log_info("res after fuzzy: ");
     for (auto&v : *res2) {
-        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* k){return string(k->data.s); }, ","));
+        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
     }
     delete res, res2;
     std::cout<<"done.\n";
