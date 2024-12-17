@@ -9,9 +9,9 @@ struct WordNode
 {
     D data;
     size_t score;
-    WordNode(D d, size_t score){
+    WordNode(const D& d, size_t sc){
         data = d;
-        score = score;
+        score = sc;
     }
 
     WordNode& operator=(WordNode&& other) {

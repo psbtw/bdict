@@ -1,2 +1,2 @@
 rm log.txt
-./a.out dingding
+./a.out pingping

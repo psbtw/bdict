@@ -27,14 +27,6 @@ public:
     PinyinParser();
     void SetFuzzyFlags(vector<FuzzyFlag> &v);
     vector<PinyinVec> Parse(const string& s);
-
-    Alphabet ParseAlphabet(string_view& s){
-        auto ret = Alphabet::FinalEnd;
-        // if (_base_map.count(s)) {
-        //     ret = _base_map[s];
-        // }
-        return ret;
-    }
     
     void DirectParseToVec(const string& src, vector<Alphabet>& dst);
 

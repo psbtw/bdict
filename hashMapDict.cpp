@@ -51,7 +51,7 @@ HashMapDict<K,V>* HashMapDict<K, V>::find(const std::vector<K>& key, int& idx) /
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
-bool HashMapDict<K, V>::Insert(std::vector<K>& key, const V& data)
+bool HashMapDict<K, V>::Insert(std::vector<K>& key, const V&& data)
 {
     int idx;
     auto ptr = this->find(key, idx);
@@ -72,7 +72,36 @@ bool HashMapDict<K, V>::Insert(std::vector<K>& key, const V& data)
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
-vector<string_view> HashMapDict<K, V>::MatchWords(const vector<vector<K>>& keys) {
+void HashMapDict<K, V>::BuildDict(const string& filePath)
+{
+    log_trace("start parse file");
+    START(parse_file);
+    auto parsedEntries = parseInput(filePath);
+    log_trace("end parse file");
+    END(parse_file);
+    TIMECOST(parse_file);
+    Pinyin::PinyinParser parser;
+
+    // Output the parsed entries
+    START(BUILD_DICT)
+    for (const auto& entry : *parsedEntries) {
+        //std::cout << "Word: " << entry.word << ", Pinyin: ";
+        vector<Pinyin::Alphabet> va;
+        parser.StringVecToAlphaVec(entry.pinyin, va);
+        //std::cout << ", Frequency: " << entry.freq << std::endl;
+        Insert(va, {entry.word, entry.freq});
+    }
+    END(BUILD_DICT)
+    TIMECOST(BUILD_DICT)
+    log_info("words count: {}", parsedEntries->size());
+    std::cout << "dict inited\n";
+    delete parsedEntries;
+}
+
+
+template <std::totally_ordered K, std::totally_ordered V>
+vector<string_view> HashMapDict<K, V>::MatchWords(const string& src) {
+    auto keys = parser.Parse(src);
     START(match_all)
     SortedVector<V> res;
     for (const auto& k : keys) {
@@ -83,12 +112,12 @@ vector<string_view> HashMapDict<K, V>::MatchWords(const vector<vector<K>>& keys)
             for (auto& v : ptr->get_data().Vec()) {
                 res.insert(v);
             }
-            log_trace("found exact match for key: {}, val: {}", parser.AlphabetVecToString(k), ptr->get_data().ToString());
+            log_trace("found exact match for key: [{}], val: {}", parser.AlphabetVecToString(k), ptr->get_data().ToString());
         } else {
-            log_trace("didn't find exact match for key: {}", parser.AlphabetVecToString(k));
+            log_trace("didn't find exact match for key: [{}]", parser.AlphabetVecToString(k));
         }
         END(match_1)
-        LOG(match_1)
+        TIMECOST(match_1)
     }
     vector<string_view> ret(res.Vec().size());
     stringstream s;
@@ -97,74 +126,27 @@ vector<string_view> HashMapDict<K, V>::MatchWords(const vector<vector<K>>& keys)
         s << ret[i] << ", ";
     }
     END(match_all)
-    LOG(match_all)
+    TIMECOST(match_all)
     log_trace("convert done, ret: {}", s.str());
     return ret;
 }
 
 int main(int argc, char* argv[]){
     //auto dict = HashMapDict<Alphabet, WordNode<std::string> >;
-    HashMapDict<K_t, D_t> dict;
+    
 
     init_logger("./log.txt");
     spdlog::set_level(spdlog::level::trace);
     spdlog::flush_on(spdlog::level::trace);
 
-    log_trace("start parse file");
-    START(parse_file);
-    auto parsedEntries = parseInput("./resources/dict.yml");
-    log_trace("end parse file");
-    END(parse_file);
-    LOG(parse_file);
-    Pinyin::PinyinParser parser;
+    HashMapDict<K_t, D_t> dict;
+    //dict.BuildDict("./resources/dict_2000.yml");
+    dict.BuildDict("./resources/full_dict.yml");
 
-    // Output the parsed entries
-    START(BUILD_DICT)
-    for (const auto& entry : *parsedEntries) {
-        //std::cout << "Word: " << entry.word << ", Pinyin: ";
-        vector<Pinyin::Alphabet> va;
-        parser.StringVecToAlphaVec(entry.pinyin, va);
-        //std::cout << ", Frequency: " << entry.freq << std::endl;
-        D_t w(entry.word, entry.freq);
-        dict.Insert(va, w);
-    }
-    END(BUILD_DICT)
-    LOG(BUILD_DICT)
-    log_info("words count: {}", parsedEntries->size());
-    std::cout << "dict inited\n";
-    delete parsedEntries;
-
-
-    //test parse
     string s(argv[1]);
-    log_info("try parse: {}", s);
-    spdlog::flush_on(spdlog::level::trace);
-    Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
-    Pinyin::PinyinParser p;
-    p.ParseToGraph(g, s);
-    auto res = g.DFS_ALL();
-    log_info("got res: ");
-    for (auto&v : *res) {
-        log_info("dfs res: {}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* const &k){return string(k->data.s); }, ","));
-    }
-    p.ApplyFuzzyForGraph(g);
-    auto res2 = g.DFS_ALL();
-    vector<vector<K_t>> keys(res2->size());
-    auto key = keys.begin();
-    log_info("res after fuzzy: ");
-    for (int i = 0; i<keys.size(); ++i) {
-        const auto& v = (*res2)[i];
-        log_info("route: {}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* const &k){return string(k->data.s); }, ","));
-        vector<K_t> k(v.size());
-        for (int j = 0; j<k.size(); ++j) {
-            k[j] = v[j]->data.a;
-        }
-        keys[i] = k;
-    }
 
     //test match
-    auto cadidates = dict.MatchWords(keys);
-    delete res, res2;
+    auto cadidates = dict.MatchWords(s);
 
     std::cout<<"done.\n";
 }

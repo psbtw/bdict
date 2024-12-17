@@ -35,8 +35,9 @@ public:
     HashMapDict(K& k);
     //~HashMapDict();
     HashMapDict* find(const std::vector<K>& key, int&);
-    bool Insert(std::vector<K>& key, const V& data);
-    vector<string_view> MatchWords(const vector<vector<K>>& keys);
+    bool Insert(std::vector<K>& key, const V&& data);
+    void BuildDict(const string&);
+    vector<string_view> MatchWords(const string& s);
 
     SortedVector<V>& get_data() {
         return data;

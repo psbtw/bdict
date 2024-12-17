@@ -783,15 +783,30 @@ vector<vector<Alphabet>> PinyinParser::StringToAlphabet(std::string &str)
 const size_t SyllableMaxLen = 6;
 vector<PinyinVec> PinyinParser::Parse(const string &s)
 {
-    auto ret = vector<PinyinVec>();
-    auto end_pos = s.size();
-    for (auto i=0; i<end_pos; ++i) {
-        for (auto j=i; j<i+SyllableMaxLen; ++j) {
-            
-        }
+    log_info("try parse: {}", s);
+    Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
+    ParseToGraph(g, s);
+    auto res = g.DFS_ALL();
+    log_info("got res: ");
+    for (auto&v : *res) {
+        log_info("dfs res: {}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* const &k){return string(k->data.s); }, ","));
     }
-    return ret;
-
+    ApplyFuzzyForGraph(g);
+    auto res2 = g.DFS_ALL();
+    vector<PinyinVec> keys(res2->size());
+    auto key = keys.begin();
+    log_info("res after fuzzy: ");
+    for (int i = 0; i<keys.size(); ++i) {
+        const auto& v = (*res2)[i];
+        log_info("route: {}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* const &k){return string(k->data.s); }, ","));
+        PinyinVec k(v.size());
+        for (int j = 0; j<k.size(); ++j) {
+            k[j] = v[j]->data.a;
+        }
+        keys[i] = k;
+    }
+    delete res, res2;
+    return keys;
 }
 
 
