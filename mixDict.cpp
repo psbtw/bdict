@@ -1,99 +1,58 @@
-#include "hashMapDict.hpp"
-#include <string>
-#include <vector>
-#include <concepts>
-#include "pinyinEncoder/types.hpp"
-#include "wordNode.hpp"
-#include "hashMapDict.hpp"
-#include <iostream>
-#include "pinyinEncoder/parser.hpp"
+#include "mixDict.hpp"
+
 
 template <std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K, V>::HashMapDict()
+MixDict<K, V>::MixDict()
 {
 }
 
-template <std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K,V>::HashMapDict(K& k, V& v)
-{
-    key = k;
-    data.emplace_back(v);
-    //sub = std::unordered_map<K,HashMapDict<K,V>*>();
-}
+// template <std::totally_ordered K, std::totally_ordered V>
+// MixDict<K,V>::MixDict(K& k, V& v)
+// {
+//     key = k;
+//     data.emplace_back(v);
+//     //sub = std::unordered_map<K,MixDict<K,V>*>();
+// }
 
-template<std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K,V>::HashMapDict(K& k)
-{
-    key = k;
-}
+// template<std::totally_ordered K, std::totally_ordered V>
+// MixDict<K,V>::MixDict(K& k)
+// {
+//     key = k;
+// }
 
 // template<std::totally_ordered K, std::totally_ordered V>
 // 
-// HashMapDict<K,V>::~HashMapDict()
+// MixDict<K,V>::~MixDict()
 // {
 
 // }
 
-template <std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K,V>* HashMapDict<K, V>::find(const std::vector<K>& key, int& idx) //find nearest match
-{
-    HashMapDict<K,V>* tmp = this;
-    auto sub = &this->sub;
-    idx = 0;
-    for (; idx<key.size(); ++idx) {
-        if (!sub->count(key[idx]) ) {
-            return tmp;
-        }
-        tmp = &sub->at(key[idx]);
-        sub = &tmp->sub;
-    }
-    return tmp;
-}
+// template <std::totally_ordered K, std::totally_ordered V>
+// MixDict<K,V>* MixDict<K, V>::find(const std::vector<K>& key, int& idx) //find nearest match
+// {
+//     MixDict<K,V>* tmp = this;
+//     auto sub = &this->sub;
+//     idx = 0;
+//     for (; idx<key.size(); ++idx) {
+//         if (!sub->count(key[idx]) ) {
+//             return tmp;
+//         }
+//         tmp = &sub->at(key[idx]);
+//         sub = &tmp->sub;
+//     }
+//     return tmp;
+// }
 
 template <std::totally_ordered K, std::totally_ordered V>
-bool HashMapDict<K, V>::Insert(std::vector<K>& key, const V&& data)
+bool MixDict<K, V>::Insert(std::vector<K>& key, const V&& data)
 {
-    int idx;
-    auto ptr = this->find(key, idx);
-    //not found, add from the latest match
-    for (; idx<key.size(); ++idx) {
-        // if (ptr->sub.size() == 0) {
-        //     ptr->sub = std::unordered_map<K, HashMapDict<K,V>*>();
-        // }
-        ptr->sub[key[idx]] = HashMapDict(key[idx]);
-        ptr = &ptr->sub[key[idx]];
-    }
-    // found
-    if (idx == key.size()) {
-        ptr->data.insert(data);
-        return true;
-    }
+    full_dict.Insert(key,data);
+    initial_dict.InsertFirstN(key, data);
     return true;
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
-bool HashMapDict<K, V>::InsertFirstN(std::vector<K>& key, const V&& data, size_t n)
-{
-    int idx;
-    auto ptr = this->find(key, idx);
-    //not found, add from the latest match
-    for (; idx<key.size(); ++idx) {
-        // if (ptr->sub.size() == 0) {
-        //     ptr->sub = std::unordered_map<K, HashMapDict<K,V>*>();
-        // }
-        ptr->sub[key[idx]] = HashMapDict(key[idx]);
-        ptr = &ptr->sub[key[idx]];
-    }
-    // found
-    if (idx == key.size()) {
-        ptr->data.insertFirstN(data, n);
-        return true;
-    }
-    return true;
-}
-
-template <std::totally_ordered K, std::totally_ordered V>
-void HashMapDict<K, V>::BuildDict(const string& filePath)
+void MixDict<K, V>::BuildDict(const string& filePath)
 {
     log_trace("start parse file");
     START(parse_file);
@@ -110,7 +69,10 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
         vector<Pinyin::Alphabet> va;
         parser.StringVecToAlphaVec(entry.pinyin, va);
         //std::cout << ", Frequency: " << entry.freq << std::endl;
-        Insert(va, {entry.word, entry.freq});
+        full_dict.Insert(va, {entry.word, entry.freq});
+        auto initials = parser.PickInitialVec(va);
+        initial_dict.InsertFirstN(initials, {entry.word, entry.freq}, 20);
+        
     }
     END(BUILD_DICT)
     TIMECOST(BUILD_DICT)
@@ -121,7 +83,7 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
 
 
 template <std::totally_ordered K, std::totally_ordered V>
-vector<string_view> HashMapDict<K, V>::MatchWords(const string& src) {
+vector<string_view> MixDict<K, V>::MatchWords(const string& src) {
     auto keys = parser.Parse(src);
     START(match_all)
     SortedVector<V> res;
@@ -152,6 +114,8 @@ vector<string_view> HashMapDict<K, V>::MatchWords(const string& src) {
     return ret;
 }
 
+
+
 int main(int argc, char* argv[]){
     //auto dict = HashMapDict<Alphabet, WordNode<std::string> >;
     
@@ -160,7 +124,7 @@ int main(int argc, char* argv[]){
     spdlog::set_level(spdlog::level::trace);
     spdlog::flush_on(spdlog::level::trace);
 
-    HashMapDict<K_t, D_t> dict;
+    MixDict<K_t, D_t> dict;
     //dict.BuildDict("./resources/dict_2000.yml");
     dict.BuildDict("./resources/full_dict.yml");
 

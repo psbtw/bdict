@@ -20,8 +20,6 @@ concept Insertable = requires(V v){
 };
 
 template<std::totally_ordered K, std::totally_ordered V>
-
-// K type require operator ==
 class HashMapDict
 {
 private:
@@ -36,6 +34,7 @@ public:
     //~HashMapDict();
     HashMapDict* find(const std::vector<K>& key, int&);
     bool Insert(std::vector<K>& key, const V&& data);
+    bool InsertFirstN(std::vector<K>& key, const V&& data, size_t n);
     void BuildDict(const string&);
     vector<string_view> MatchWords(const string& s);
 
@@ -55,4 +54,4 @@ struct WordEntry {
 std::vector<WordEntry>* parseInput(const std::string& filePath);
 
 using K_t = Pinyin::Alphabet;
-using D_t = WordNode<string>; 
+using D_t = WordNode<string>;

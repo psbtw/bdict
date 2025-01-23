@@ -36,6 +36,18 @@ public:
         }
     }
 
+    vector<Alphabet> PickInitialVec(vector<Alphabet>& src) {
+        vector<Alphabet> ret(src.size()/2);
+        log_trace("src %d, ret %d", src.size(), ret.size());
+        for (const auto& a : src) {
+            if (a < Alphabet::InitialEnd) {
+                ret.emplace_back(a);
+            }
+        }
+        log_trace("final ret: %d", ret.size());
+        return ret;
+    }
+
     void ParseToGraph(PinyinGraph& g, const string& src,  size_t start_pos = 0, PinyinGraphNode* cur = nullptr);
     void ApplyFuzzyForGraph(PinyinGraph& g) {
         g.BFS_LEVEL(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1));
