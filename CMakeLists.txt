@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.22)
 
 project(bdict)
 
+find_library(android-log log)
 # configure_file (
 #   "${PROJECT_SOURCE_DIR}/config.h.in"
 #   "${PROJECT_BINARY_DIR}/config.h"
@@ -25,6 +26,8 @@ message(Debug "common src: ${COMMON_SRC}")
 file(GLOB SRC ${PROJECT_SOURCE_DIR}/*.cpp ${PROJECT_SOURCE_DIR}/*.hpp 
     ${PROJECT_SOURCE_DIR}/pinyinEncoder/*.cpp ${PROJECT_SOURCE_DIR}/pinyinEncoder/*.hpp)
 message(Debug "bdict src: ${SRC}")
+
+target_link_libraries(android ${android-log})
 add_executable(a.out ${SRC} ${COMMON_SRC})
 add_library(${PROJECT_NAME} ${SRC} ${COMMON_SRC})
 
