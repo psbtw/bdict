@@ -38,10 +38,16 @@ public:
 
     PinyinVec PickInitialVec(const PinyinVec& src) {
         PinyinVec ret;
+        if (src.size() < 1) {
+            return ret;
+        }
         ret.reserve(src.size()/2);
-        for (const auto& a : src) {
-            if (a < Alphabet::InitialEnd) {
-                ret.emplace_back(a);
+        if (src[0] < Alphabet::InitialEnd || src[0] == Alphabet::A || src[0] == Alphabet::AI) {
+            ret.emplace_back(src[0]);
+        }
+        for (int i=1; i<src.size(); ++i) {
+            if (src[i] < Alphabet::InitialEnd) {
+                ret.emplace_back(src[i]);
             }
         }
         //log_trace("final ret: {}", ret.size());
@@ -51,7 +57,7 @@ public:
     void ParseToGraph(PinyinGraph& g, const string& src,  size_t start_pos = 0, PinyinGraphNode* cur = nullptr);
     void ApplyFuzzyForGraph(PinyinGraph& g) {
         g.BFS_LEVEL(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1));
-        spdlog::trace("fuzzy done.");
+        log_trace("fuzzy done.");
     }
 
     string AlphabetVecToString(const vector<Alphabet>& v, const char* sep = ",") {
