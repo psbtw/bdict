@@ -25,6 +25,17 @@ struct WordNode
         return *this;
     }    
 
+    WordNode& operator=(const WordNode& other) {
+        
+        // Guard self assignment
+        if (this == &other)
+            return *this;
+        data = other.data;
+        score = other.score;
+        //log_trace("operator=, {}:{}", data, score);
+        return *this;
+    }  
+
     WordNode(const WordNode& other) {
         data = other.data;
         score = other.score;
@@ -42,7 +53,7 @@ struct WordNode
         return this->score > other.score;
     }
     bool operator==(const WordNode& other) const {
-        return this->score == other.score;
+        return this->data == other.data;
     }
 
     bool operator<=(const WordNode& other) const {

@@ -36,15 +36,15 @@ public:
         }
     }
 
-    vector<Alphabet> PickInitialVec(vector<Alphabet>& src) {
-        vector<Alphabet> ret(src.size()/2);
-        log_trace("src %d, ret %d", src.size(), ret.size());
+    PinyinVec PickInitialVec(const PinyinVec& src) {
+        PinyinVec ret;
+        ret.reserve(src.size()/2);
         for (const auto& a : src) {
             if (a < Alphabet::InitialEnd) {
                 ret.emplace_back(a);
             }
         }
-        log_trace("final ret: %d", ret.size());
+        //log_trace("final ret: {}", ret.size());
         return ret;
     }
 
@@ -175,12 +175,12 @@ private:
 
     void SetFuzzy() { //consider dynamic configurations in later verison
         _fz_map = move(unordered_map<Alphabet, Alphabet>{
-            // {Alphabet::Z, Alphabet::ZH},
-            // {Alphabet::ZH, Alphabet::Z},
-            // {Alphabet::C, Alphabet::CH},
-            // {Alphabet::CH, Alphabet::C},
-            // {Alphabet::S, Alphabet::SH},
-            // {Alphabet::SH, Alphabet::S},
+            {Alphabet::Z, Alphabet::ZH},
+            {Alphabet::ZH, Alphabet::Z},
+            {Alphabet::C, Alphabet::CH},
+            {Alphabet::CH, Alphabet::C},
+            {Alphabet::S, Alphabet::SH},
+            {Alphabet::SH, Alphabet::S},
             {Alphabet::IN, Alphabet::ING},
             {Alphabet::ING, Alphabet::IN},
             {Alphabet::EN, Alphabet::ENG},
@@ -196,7 +196,7 @@ private:
             ptr->data.data.s = _alpha_ref[newKey.a];
             ptr->data.data.a = newKey.a;
             ptr->CopyRelation(node);
-            spdlog::trace("copied node {} ", node->data.data.s);
+            log_trace("copied node {} ", node->data.data.s);
         }
     }
 

@@ -22,7 +22,7 @@ HashMapDict<K,V>::HashMapDict(K& k, V& v)
 }
 
 template<std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K,V>::HashMapDict(K& k)
+HashMapDict<K,V>::HashMapDict(const K& k)
 {
     key = k;
 }
@@ -35,7 +35,7 @@ HashMapDict<K,V>::HashMapDict(K& k)
 // }
 
 template <std::totally_ordered K, std::totally_ordered V>
-HashMapDict<K,V>* HashMapDict<K, V>::find(const std::vector<K>& key, int& idx) //find nearest match
+HashMapDict<K,V>* HashMapDict<K, V>::Find(const std::vector<K>& key, int& idx) //Find nearest match
 {
     HashMapDict<K,V>* tmp = this;
     auto sub = &this->sub;
@@ -51,10 +51,10 @@ HashMapDict<K,V>* HashMapDict<K, V>::find(const std::vector<K>& key, int& idx) /
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
-bool HashMapDict<K, V>::Insert(std::vector<K>& key, const V&& data)
+bool HashMapDict<K, V>::Insert(const std::vector<K>& key, const V&& data)
 {
     int idx;
-    auto ptr = this->find(key, idx);
+    auto ptr = this->Find(key, idx);
     //not found, add from the latest match
     for (; idx<key.size(); ++idx) {
         // if (ptr->sub.size() == 0) {
@@ -72,10 +72,10 @@ bool HashMapDict<K, V>::Insert(std::vector<K>& key, const V&& data)
 }
 
 template <std::totally_ordered K, std::totally_ordered V>
-bool HashMapDict<K, V>::InsertFirstN(std::vector<K>& key, const V&& data, size_t n)
+bool HashMapDict<K, V>::InsertFirstN(const std::vector<K>& key, const V&& data, int n)
 {
     int idx;
-    auto ptr = this->find(key, idx);
+    auto ptr = this->Find(key, idx);
     //not found, add from the latest match
     for (; idx<key.size(); ++idx) {
         // if (ptr->sub.size() == 0) {
@@ -86,7 +86,7 @@ bool HashMapDict<K, V>::InsertFirstN(std::vector<K>& key, const V&& data, size_t
     }
     // found
     if (idx == key.size()) {
-        ptr->data.insertFirstN(data, n);
+        ptr->data.insertFisrtN(data, n);
         return true;
     }
     return true;
@@ -111,6 +111,10 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
         parser.StringVecToAlphaVec(entry.pinyin, va);
         //std::cout << ", Frequency: " << entry.freq << std::endl;
         Insert(va, {entry.word, entry.freq});
+        auto iv = parser.PickInitialVec(va);
+        if (iv.size()>0) {
+            InsertFirstN(iv, {entry.word, entry.freq}, 20);
+        }
     }
     END(BUILD_DICT)
     TIMECOST(BUILD_DICT)
@@ -119,6 +123,32 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
     delete parsedEntries;
 }
 
+template <std::totally_ordered K, std::totally_ordered V>
+bool HashMapDict<K, V>::LookUpByAlphabet(const Pinyin::PinyinVec& k, SortedVector<V>& res){
+    START(match_1)
+    int idx = 0;
+    auto ptr = Find(k, idx);
+    bool found = false;
+    if (idx == k.size())[[__likely__]] {
+        found = true;
+        for (auto& v : ptr->get_data().Vec()) {
+            res.insert(v);
+        }
+        log_trace("found exact match for key: [{}], val: {}", parser.AlphabetVecToString(k), ptr->get_data().ToString());
+    } else {
+        log_trace("didn't find exact match for key: [{}]", parser.AlphabetVecToString(k));
+    }
+    END(match_1)
+    TIMECOST(match_1)
+    vector<string_view> ret(res.Vec().size());
+    stringstream s;
+    for (int i = 0; i < ret.size(); ++i) {
+        ret[i] = res.Vec()[i].data;
+        s << ret[i] << ", ";
+    }
+    log_trace("convert done, ret: {}", s.str());
+    return found;
+}
 
 template <std::totally_ordered K, std::totally_ordered V>
 vector<string_view> HashMapDict<K, V>::MatchWords(const string& src) {
@@ -128,7 +158,7 @@ vector<string_view> HashMapDict<K, V>::MatchWords(const string& src) {
     for (const auto& k : keys) {
         START(match_1)
         int idx = 0;
-        auto ptr = find(k, idx);
+        auto ptr = Find(k, idx);
         if (idx == k.size())[[__likely__]] {
             for (auto& v : ptr->get_data().Vec()) {
                 res.insert(v);
@@ -149,10 +179,11 @@ vector<string_view> HashMapDict<K, V>::MatchWords(const string& src) {
     END(match_all)
     TIMECOST(match_all)
     log_trace("convert done, ret: {}", s.str());
+    cout<<s.str()<<endl;
     return ret;
 }
 
-int main(int argc, char* argv[]){
+int testHashMapDict(int argc, char* argv[]){
     //auto dict = HashMapDict<Alphabet, WordNode<std::string> >;
     
 
@@ -167,7 +198,16 @@ int main(int argc, char* argv[]){
     string s(argv[1]);
 
     //test match
-    auto cadidates = dict.MatchWords(s);
+    std::string input;
+    while (1) {
+        std::getline(std::cin, input);
+        if (input == "quit") {
+            break;
+        }
+        auto cadidates = dict.MatchWords(input);
+    }
+    
 
     std::cout<<"done.\n";
+    return 0;
 }

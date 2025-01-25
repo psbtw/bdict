@@ -48,18 +48,18 @@ std::vector<WordEntry>* parseInput(const std::string& filePath) {
     return entries;
 }
 
-// int main() {
+int testDictParser() {
 
-//     auto parsedEntries = parseInput("./resources/dict.yml");
+    auto parsedEntries = parseInput("./resources/dict.yml");
 
-//     // Output the parsed entries
-//     for (const auto& entry : *parsedEntries) {
-//         std::cout << "Word: " << entry.word << ", Pinyin: ";
-//         for (const auto& p : entry.pinyin) {
-//             std::cout << p << " ";
-//         }
-//         std::cout << ", Frequency: " << entry.freq << std::endl;
-//     }
-//     delete parsedEntries;
-//     return 0;
-// }
+    // Output the parsed entries
+    for (const auto& entry : *parsedEntries) {
+        std::cout << "Word: " << entry.word << ", Pinyin: ";
+        for (const auto& p : entry.pinyin) {
+            std::cout << p << " ";
+        }
+        std::cout << ", Frequency: " << entry.freq << std::endl;
+    }
+    delete parsedEntries;
+    return 0;
+}
