@@ -836,7 +836,8 @@ int test_parser(int argc, char* argv[]) {
     for (auto&v : *res2) {
         log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
     }
-    delete res, res2;
+    delete res;
+    delete res2;
     std::cout<<"done.\n";
     return 0;
 }
