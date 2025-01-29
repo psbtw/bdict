@@ -695,8 +695,8 @@ void PinyinParser::DirectParseToVec(const string& src, vector<Alphabet>& dst) {
     while(start < src.length()) {
         size_t i = MaxAlphabetLen < src.size() - start ? MaxAlphabetLen : src.size() - start; 
         for (; i>0; --i) {
-            auto s = string_view(&src[start], i);
-            if (_parse_ref.contains(s)) { // valid alpha
+            auto s = string(&src[start], i);
+            if (_parse_ref.count(s)) { // valid alpha
                 dst.emplace_back(_parse_ref[s][0].a);
                 start += i; //commit
                 break;
@@ -704,7 +704,7 @@ void PinyinParser::DirectParseToVec(const string& src, vector<Alphabet>& dst) {
             } 
         }
         if (i == 0) {
-            log_trace("invalid s: {}", src[start]);
+            log_trace("invalid s: %c", src[start]);
             break;
         }
     }
@@ -714,7 +714,7 @@ void PinyinParser::DirectParseToVec(const string& src, vector<Alphabet>& dst) {
 void logGraph(Graph<AlphaMark, MarkKey>& g) {
     log_info("logging graph:");
     for (auto& e : g.GetTable()) {
-        log_info("key {} data at {}", e.first.toString(), fmt::ptr(&e.second));
+        log_info("key %s data at %p", e.first.toString(), &e.second);
     }
 }
 
@@ -729,17 +729,17 @@ void PinyinParser::ParseToGraph(PinyinGraph& g, const string& src, size_t start,
     //while (start < src.size()) {
     size_t step_len = MaxAlphabetLen < src.size() - start ? MaxAlphabetLen : src.size() - start; 
     for (int i=step_len; i>0; --i) {
-        auto s = string_view(&src[start], i);
-        if (_parse_ref.contains(s)) { // valid alpha
+        auto s = string(&src[start], i);
+        if (_parse_ref.count(s)) { // valid alpha
             for (auto& v : _parse_ref[s]) {
                 const MarkKey key{start,start+v.s.size(), v.a}; // 【start， end）
-                if (table.contains(key)) { //already exist
+                if (table.count(key)) { //already exist
                     cur_node->AddToNode((table[key])); //different address from ori node, but the value is the same
-                    log_info("get key {} data at {}", key.toString(), fmt::ptr((table[key])));
+                    log_info("get key %s data at %p", key.toString(), (table[key]));
                     continue; //same start, same iteration, certainly same end, so just return, actually this means a joined node.
                 } else { //new node
                     auto ptr = g.AddNode(key, AlphaMark{key, v});
-                    log_info("added new node {} at {}", key.toString(), fmt::ptr(ptr));
+                    log_info("added new node %s at %p", key.toString(), ptr);
                     cur_node->AddToNode(ptr);
                     //logGraph(g);
                     ParseToGraph(g, src, start+v.s.size(), cur_node->to_nodes.back()); // recrusive, cur_node move to newly added
@@ -818,23 +818,26 @@ int test_parser(int argc, char* argv[]) {
     using Pinyin::MarkKey;
 
     init_logger("./log.txt");
-    spdlog::set_level(spdlog::level::trace);
+    // spdlog::set_level(spdlog::level::trace);
     Pinyin::PinyinParser p;
     string s(argv[1]);
-    log_info("try parse: {}", s);
-    spdlog::flush_on(spdlog::level::trace);
+    // log_info("try parse: {}", s);
+    // spdlog::flush_on(spdlog::level::trace);
+    log_info("try parse: %s", s);
     Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
     p.ParseToGraph(g, s);
     auto res = g.DFS_ALL();
     log_info("got res: ");
     for (auto&v : *res) {
-        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
+        //log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
+        log_info("%s", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
     }
     p.ApplyFuzzyForGraph(g);
     auto res2 = g.DFS_ALL();
     log_info("res after fuzzy: ");
     for (auto&v : *res2) {
-        log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
+        //log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
+        log_info("%s", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
     }
     delete res;
     delete res2;

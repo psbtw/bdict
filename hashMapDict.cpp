@@ -8,12 +8,14 @@
 #include <iostream>
 #include "pinyinEncoder/parser.hpp"
 
-template <std::totally_ordered K, std::totally_ordered V>
+//template <std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
 HashMapDict<K, V>::HashMapDict()
 {
 }
 
-template <std::totally_ordered K, std::totally_ordered V>
+//template <std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
 HashMapDict<K,V>::HashMapDict(K& k, V& v)
 {
     key = k;
@@ -21,7 +23,8 @@ HashMapDict<K,V>::HashMapDict(K& k, V& v)
     //sub = std::unordered_map<K,HashMapDict<K,V>*>();
 }
 
-template<std::totally_ordered K, std::totally_ordered V>
+//template<std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
 HashMapDict<K,V>::HashMapDict(const K& k)
 {
     key = k;
@@ -34,7 +37,8 @@ HashMapDict<K,V>::HashMapDict(const K& k)
 
 // }
 
-template <std::totally_ordered K, std::totally_ordered V>
+//template <std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
 HashMapDict<K,V>* HashMapDict<K, V>::Find(const std::vector<K>& key, int& idx) //Find nearest match
 {
     HashMapDict<K,V>* tmp = this;
@@ -50,7 +54,8 @@ HashMapDict<K,V>* HashMapDict<K, V>::Find(const std::vector<K>& key, int& idx) /
     return tmp;
 }
 
-template <std::totally_ordered K, std::totally_ordered V>
+//template <std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
 bool HashMapDict<K, V>::Insert(const std::vector<K>& key, const V&& data)
 {
     int idx;
@@ -71,7 +76,8 @@ bool HashMapDict<K, V>::Insert(const std::vector<K>& key, const V&& data)
     return true;
 }
 
-template <std::totally_ordered K, std::totally_ordered V>
+//template <std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
 bool HashMapDict<K, V>::InsertFirstN(const std::vector<K>& key, const V&& data, int n)
 {
     int idx;
@@ -92,7 +98,8 @@ bool HashMapDict<K, V>::InsertFirstN(const std::vector<K>& key, const V&& data, 
     return true;
 }
 
-template <std::totally_ordered K, std::totally_ordered V>
+//template <std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
 void HashMapDict<K, V>::BuildDict(const string& filePath)
 {
     log_trace("start parse file");
@@ -123,7 +130,8 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
     delete parsedEntries;
 }
 
-template <std::totally_ordered K, std::totally_ordered V>
+//template <std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
 bool HashMapDict<K, V>::LookUpByAlphabet(const Pinyin::PinyinVec& k, SortedVector<V>& res){
     START(match_1)
     int idx = 0;
@@ -140,7 +148,7 @@ bool HashMapDict<K, V>::LookUpByAlphabet(const Pinyin::PinyinVec& k, SortedVecto
     }
     END(match_1)
     TIMECOST(match_1)
-    vector<string_view> ret(res.Vec().size());
+    vector<string> ret(res.Vec().size());
     stringstream s;
     for (int i = 0; i < ret.size(); ++i) {
         ret[i] = res.Vec()[i].data;
@@ -150,8 +158,9 @@ bool HashMapDict<K, V>::LookUpByAlphabet(const Pinyin::PinyinVec& k, SortedVecto
     return found;
 }
 
-template <std::totally_ordered K, std::totally_ordered V>
-vector<string_view> HashMapDict<K, V>::MatchWords(const string& src) {
+//template <std::totally_ordered K, std::totally_ordered V>
+template <typename K, typename V>
+vector<string> HashMapDict<K, V>::MatchWords(const string& src) {
     auto keys = parser.Parse(src);
     START(match_all)
     SortedVector<V> res;
@@ -170,7 +179,7 @@ vector<string_view> HashMapDict<K, V>::MatchWords(const string& src) {
         END(match_1)
         TIMECOST(match_1)
     }
-    vector<string_view> ret(res.Vec().size());
+    vector<string> ret(res.Vec().size());
     stringstream s;
     for (int i = 0; i < ret.size(); ++i) {
         ret[i] = res.Vec()[i].data;
@@ -188,8 +197,8 @@ int testHashMapDict(int argc, char* argv[]){
     
 
     init_logger("./log.txt");
-    spdlog::set_level(spdlog::level::trace);
-    spdlog::flush_on(spdlog::level::trace);
+    // spdlog::set_level(spdlog::level::trace);
+    // spdlog::flush_on(spdlog::level::trace);
 
     HashMapDict<K_t, D_t> dict;
     //dict.BuildDict("./resources/dict_2000.yml");

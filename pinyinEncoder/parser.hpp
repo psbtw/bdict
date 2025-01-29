@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include "../../bcommon/container/graph.hpp"
 #include <string>
-#include <string_view>
+//#include <string_view>
 
 namespace Pinyin {
 
@@ -18,7 +18,7 @@ private:
     PinyinMap _all_map, _base_map, _fuzzy_map;
     AlphabetMap _alphabet_map;
     ParseRef _parse_ref;
-    unordered_map<Alphabet,string_view> _alpha_ref;
+    unordered_map<Alphabet,string> _alpha_ref;
     unordered_map<Alphabet, Alphabet> _fz_map;
     
 
@@ -51,7 +51,7 @@ public:
     void ParseToGraph(PinyinGraph& g, const string& src,  size_t start_pos = 0, PinyinGraphNode* cur = nullptr);
     void ApplyFuzzyForGraph(PinyinGraph& g) {
         g.BFS_LEVEL(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1));
-        spdlog::trace("fuzzy done.");
+        log_trace("fuzzy done.");
     }
 
     string AlphabetVecToString(const vector<Alphabet>& v, const char* sep = ",") {
@@ -120,7 +120,7 @@ private:
             {"in", {{"in", Alphabet::IN}, {"i", Alphabet::I}}}, 
         });
 
-        _alpha_ref = move(unordered_map<Alphabet, string_view>{
+        _alpha_ref = move(unordered_map<Alphabet, string>{
             {Alphabet::B, "b"},
             {Alphabet::P, "p"},
             {Alphabet::M, "m"},
@@ -189,7 +189,7 @@ private:
     }
 
     void addFuzzyNode(PinyinGraph* g, PinyinGraphNode* node) {
-        if (node->data.data.fz && _fz_map.contains(node->data.key.a)) {
+        if (node->data.data.fz && _fz_map.count(node->data.key.a)) {
             MarkKey newKey(node->data.key);            
             newKey.a = _fz_map[node->data.key.a];
             auto ptr = g->AddNode(newKey, node->data);

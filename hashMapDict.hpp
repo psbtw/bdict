@@ -8,18 +8,19 @@
 #include "pinyinEncoder/types.hpp"
 #include "pinyinEncoder/parser.hpp"
 
-template<typename T>
-concept ArrayType = requires(T t){
-    t[0] == t[1]; // operator[] and operator == of elements
-    t.size();
-};
+// template<typename T>
+// concept ArrayType = requires(T t){
+//     t[0] == t[1]; // operator[] and operator == of elements
+//     t.size();
+// };
 
-template<typename V>
-concept Insertable = requires(V v){
-    v.insert();
-};
+// template<typename V>
+// concept Insertable = requires(V v){
+//     v.insert();
+// };
 
-template<std::totally_ordered K, std::totally_ordered V>
+//template<std::totally_ordered K, std::totally_ordered V>
+template<typename K, typename V>
 class HashMapDict
 {
 private:
@@ -38,7 +39,7 @@ public:
     void BuildDict(const string&);
 
     bool LookUpByAlphabet(const Pinyin::PinyinVec& p, SortedVector<V>& res);
-    vector<string_view> MatchWords(const string& s);
+    vector<string> MatchWords(const string& s);
 
     SortedVector<V>& get_data() {
         return data;

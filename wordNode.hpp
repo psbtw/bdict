@@ -2,6 +2,7 @@
 
 #include <concepts>
 #include <ostream>
+#include <sstream>
 using namespace std;
 
 template<typename D>
@@ -64,7 +65,10 @@ struct WordNode
     }
 
     inline string ToString() const{
-        return format("{}:{},  ", data, score);
+        //return format("{}:{},  ", data, score);
+        stringstream ss;
+        ss << data << ":" << score << ", ";
+        return ss.str();
     }
 
     ostream& operator<<(ostream& s) const {

@@ -3,10 +3,11 @@
 #include "../../bcommon/common/log.hpp"
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 namespace Pinyin {
 
-enum class Initial : char {
+enum class Initial {
     Invalid = 0,
     B = 1,
     P,
@@ -34,8 +35,8 @@ enum class Initial : char {
     End
 };
 
-enum class Final : char {
-    Invalid = (char)Initial::End,
+enum class Final {
+    Invalid = (int)Initial::End,
     A,
     AI,
     AN,
@@ -74,7 +75,7 @@ enum class Final : char {
     End
 };
 
-enum class Alphabet : char {
+enum class Alphabet {
     Invalid = 0,
     B,
     P,
@@ -197,16 +198,16 @@ struct PinyinMapEntry {
 };
 
 using PinyinVec = std::vector<Alphabet>;
-using PinyinMap = unordered_map<string_view, PinyinMapEntry>;
-using AlphabetMap = unordered_map<string_view, Alphabet>;
+using PinyinMap = unordered_map<string, PinyinMapEntry>;
+using AlphabetMap = unordered_map<string, Alphabet>;
 
 struct AlphaData {
-    string_view s;
+    string s;
     Alphabet a; 
     bool fz = true;
 };
 
-using ParseRef = unordered_map<string_view, vector<AlphaData>>;
+using ParseRef = unordered_map<string, vector<AlphaData>>;
 
 struct MarkKey {
     size_t start_pos;
@@ -226,7 +227,7 @@ struct AlphaMark
 {
     MarkKey key;
     AlphaData data;  
-    //const string_view& src;
+    //const string& src;
     string toString() {
         return string(data.s);
     }
