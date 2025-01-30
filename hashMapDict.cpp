@@ -172,9 +172,12 @@ vector<string> HashMapDict<K, V>::MatchWords(const string& src) {
             for (auto& v : ptr->get_data().Vec()) {
                 res.insert(v);
             }
-            log_trace("found exact match for key: [%s], val: %s", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
+            log_trace("found exact match for key: [%s], val: [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
         } else {
-            log_trace("didn't find exact match for key: [%s]", parser.AlphabetVecToString(k).c_str());
+            for (auto& v : ptr->get_data().Vec()) {
+                res.insert(v);
+            }
+            log_trace("didn't find exact match for key: [%s], use longest match [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
         }
         END(match_1)
         TIMECOST(match_1)
