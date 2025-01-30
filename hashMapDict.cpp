@@ -125,7 +125,7 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
     }
     END(BUILD_DICT)
     TIMECOST(BUILD_DICT)
-    log_info("words count: {}", parsedEntries->size());
+    log_info("words count: %d", parsedEntries->size());
     std::cout << "dict inited\n";
     delete parsedEntries;
 }
@@ -142,9 +142,9 @@ bool HashMapDict<K, V>::LookUpByAlphabet(const Pinyin::PinyinVec& k, SortedVecto
         for (auto& v : ptr->get_data().Vec()) {
             res.insert(v);
         }
-        log_trace("found exact match for key: [{}], val: {}", parser.AlphabetVecToString(k), ptr->get_data().ToString());
+        log_trace("found exact match for key: [%s], val: %s", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
     } else {
-        log_trace("didn't find exact match for key: [{}]", parser.AlphabetVecToString(k));
+        log_trace("didn't find exact match for key: [%s]", parser.AlphabetVecToString(k).c_str());
     }
     END(match_1)
     TIMECOST(match_1)
@@ -154,7 +154,7 @@ bool HashMapDict<K, V>::LookUpByAlphabet(const Pinyin::PinyinVec& k, SortedVecto
         ret[i] = res.Vec()[i].data;
         s << ret[i] << ", ";
     }
-    log_trace("convert done, ret: {}", s.str());
+    log_trace("convert done, ret: %s", s.str().c_str());
     return found;
 }
 
@@ -172,9 +172,9 @@ vector<string> HashMapDict<K, V>::MatchWords(const string& src) {
             for (auto& v : ptr->get_data().Vec()) {
                 res.insert(v);
             }
-            log_trace("found exact match for key: [{}], val: {}", parser.AlphabetVecToString(k), ptr->get_data().ToString());
+            log_trace("found exact match for key: [%s], val: %s", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
         } else {
-            log_trace("didn't find exact match for key: [{}]", parser.AlphabetVecToString(k));
+            log_trace("didn't find exact match for key: [%s]", parser.AlphabetVecToString(k).c_str());
         }
         END(match_1)
         TIMECOST(match_1)
@@ -187,7 +187,7 @@ vector<string> HashMapDict<K, V>::MatchWords(const string& src) {
     }
     END(match_all)
     TIMECOST(match_all)
-    log_trace("convert done, ret: {}", s.str());
+    log_trace("convert done, ret: %s", s.str().c_str());
     cout<<s.str()<<endl;
     return ret;
 }

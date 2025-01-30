@@ -196,7 +196,7 @@ private:
             ptr->data.data.s = _alpha_ref[newKey.a];
             ptr->data.data.a = newKey.a;
             ptr->CopyRelation(node);
-            log_trace("copied node {} ", node->data.data.s);
+            //log_trace("copied node {} ", node->data.data.s);
         }
     }
 
