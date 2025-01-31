@@ -38,10 +38,17 @@ public:
 
     PinyinVec PickInitialVec(const PinyinVec& src) {
         PinyinVec ret;
+        if (src.size() < 2) {
+            return ret;
+        }
         ret.reserve(src.size()/2);
-        for (const auto& a : src) {
-            if (a < Alphabet::InitialEnd) {
-                ret.emplace_back(a);
+        ret.emplace_back(src[0]);
+        for (int i = 1; i<src.size(); ++i) {
+            if (src[i] < Alphabet::InitialEnd  ) {
+                ret.emplace_back(src[i]);
+            } else if (src[i-1]>Alphabet::InitialEnd) { // self not initial && pre is not Initial
+                // count self as initial
+                ret.emplace_back(src[i]);
             }
         }
         //log_trace("final ret: {}", ret.size());
