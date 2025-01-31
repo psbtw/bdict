@@ -9,11 +9,13 @@
 #include <fstream>
 #include "pinyinEncoder/parser.hpp"
 
+template <typename K, typename V>
+Pinyin::PinyinParser HashMapDict<K,V>::parser = Pinyin::PinyinParser();
+
 //template <std::totally_ordered K, std::totally_ordered V>
 template <typename K, typename V>
 HashMapDict<K, V>::HashMapDict()
 {
-    parser = Pinyin::PinyinParser();
 }
 
 //template <std::totally_ordered K, std::totally_ordered V>
@@ -22,7 +24,6 @@ HashMapDict<K,V>::HashMapDict(K& k, V& v)
 {
     key = k;
     data.emplace_back(v);
-    parser = Pinyin::PinyinParser();
     //sub = std::unordered_map<K,HashMapDict<K,V>*>();
 }
 
@@ -31,7 +32,6 @@ template <typename K, typename V>
 HashMapDict<K,V>::HashMapDict(const K& k)
 {
     key = k;
-    parser = Pinyin::PinyinParser();
 }
 
 // template<std::totally_ordered K, std::totally_ordered V>
@@ -116,6 +116,7 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
 
     START(BUILD_DICT)
     std::string line;
+    int i = 0;
     while (std::getline(file, line)) {
         std::istringstream lineStream(line);
         WordEntry entry;
@@ -140,11 +141,14 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
 
         // Convert frequency to size_t
         entry.freq = std::stoul(freqPart);
-        std::cout << "Word: " << entry.word << ", Pinyin: ";
-        std::cout << ", Frequency: " << entry.freq << std::endl;
+        
         vector<Pinyin::Alphabet> va;
         parser.StringVecToAlphaVec(entry.pinyin, va);
         Insert(va, {entry.word, entry.freq});
+        if (++i % 10000 == 0) {
+            std::cout << "Word: " << entry.word << ", Pinyin: ";
+            std::cout << ", Frequency: " << entry.freq << std::endl;
+        }
         auto iv = parser.PickInitialVec(va);
         if (iv.size()>0) {
             InsertFirstN(iv, {entry.word, entry.freq}, 20);
@@ -152,7 +156,7 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
     }
     END(BUILD_DICT)
     TIMECOST(BUILD_DICT)
-    //log_info("words count: %d", parsedEntries->size());
+    log_info("words count: %d", i);
     std::cout << "dict inited\n";
 
     // log_trace("start parse file");
