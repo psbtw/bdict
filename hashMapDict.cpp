@@ -6,6 +6,7 @@
 #include "wordNode.hpp"
 #include "hashMapDict.hpp"
 #include <iostream>
+#include <fstream>
 #include "pinyinEncoder/parser.hpp"
 
 //template <std::totally_ordered K, std::totally_ordered V>
@@ -105,21 +106,44 @@ bool HashMapDict<K, V>::InsertFirstN(const std::vector<K>& key, const V&& data, 
 template <typename K, typename V>
 void HashMapDict<K, V>::BuildDict(const string& filePath)
 {
-    log_trace("start parse file");
-    START(parse_file);
-    auto parsedEntries = parseInput(filePath);
-    log_trace("end parse file");
-    END(parse_file);
-    TIMECOST(parse_file);
-    Pinyin::PinyinParser parser;
+    //auto entries = new std::vector<WordEntry>();
+    std::ifstream file(filePath);
+    
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << filePath << std::endl;
+        return;
+    }
 
-    // Output the parsed entries
     START(BUILD_DICT)
-    for (const auto& entry : *parsedEntries) {
-        //std::cout << "Word: " << entry.word << ", Pinyin: ";
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream lineStream(line);
+        WordEntry entry;
+        std::string pinyinPart;
+        std::string freqPart;
+
+        // Read the word
+        lineStream >> entry.word;
+        if (entry.word[0] == '#') {
+            //spdlog::trace("meet comment: {}", entry.word);
+            continue;
+        }
+
+        // Read the pinyin (until the last part which is the frequency)
+        while (lineStream >> pinyinPart) {
+            if (std::isdigit(pinyinPart[0])) {
+                freqPart = pinyinPart; // Last part is frequency
+                break;
+            }
+            entry.pinyin.emplace_back(pinyinPart);
+        }
+
+        // Convert frequency to size_t
+        entry.freq = std::stoul(freqPart);
+        std::cout << "Word: " << entry.word << ", Pinyin: ";
+        std::cout << ", Frequency: " << entry.freq << std::endl;
         vector<Pinyin::Alphabet> va;
         parser.StringVecToAlphaVec(entry.pinyin, va);
-        //std::cout << ", Frequency: " << entry.freq << std::endl;
         Insert(va, {entry.word, entry.freq});
         auto iv = parser.PickInitialVec(va);
         if (iv.size()>0) {
@@ -128,9 +152,35 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
     }
     END(BUILD_DICT)
     TIMECOST(BUILD_DICT)
-    log_info("words count: %d", parsedEntries->size());
+    //log_info("words count: %d", parsedEntries->size());
     std::cout << "dict inited\n";
-    delete parsedEntries;
+
+    // log_trace("start parse file");
+    // START(parse_file);
+    // auto parsedEntries = parseInput(filePath);
+    // log_trace("end parse file");
+    // END(parse_file);
+    // TIMECOST(parse_file);
+    // Pinyin::PinyinParser parser;
+
+    // // Output the parsed entries
+    // START(BUILD_DICT)
+    // for (const auto& entry : *parsedEntries) {
+    //     //std::cout << "Word: " << entry.word << ", Pinyin: ";
+    //     vector<Pinyin::Alphabet> va;
+    //     parser.StringVecToAlphaVec(entry.pinyin, va);
+    //     //std::cout << ", Frequency: " << entry.freq << std::endl;
+    //     Insert(va, {entry.word, entry.freq});
+    //     // auto iv = parser.PickInitialVec(va);
+    //     // if (iv.size()>0) {
+    //     //     InsertFirstN(iv, {entry.word, entry.freq}, 20);
+    //     // }
+    // }
+    // END(BUILD_DICT)
+    // TIMECOST(BUILD_DICT)
+    // log_info("words count: %d", parsedEntries->size());
+    // std::cout << "dict inited\n";
+    // delete parsedEntries;
 }
 
 //template <std::totally_ordered K, std::totally_ordered V>
@@ -202,7 +252,7 @@ int testHashMapDict(int argc, char* argv[]){
     //auto dict = HashMapDict<Alphabet, WordNode<std::string> >;
     
 
-    init_logger("./log.txt");
+    init_logger("log.txt");
     // spdlog::set_level(spdlog::level::trace);
     // spdlog::flush_on(spdlog::level::trace);
 
@@ -220,6 +270,7 @@ int testHashMapDict(int argc, char* argv[]){
             break;
         }
         auto cadidates = dict.MatchWords(input);
+        
     }
     
 
