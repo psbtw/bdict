@@ -12,6 +12,7 @@
 template <typename K, typename V>
 HashMapDict<K, V>::HashMapDict()
 {
+    parser = Pinyin::PinyinParser();
 }
 
 //template <std::totally_ordered K, std::totally_ordered V>
@@ -20,6 +21,7 @@ HashMapDict<K,V>::HashMapDict(K& k, V& v)
 {
     key = k;
     data.emplace_back(v);
+    parser = Pinyin::PinyinParser();
     //sub = std::unordered_map<K,HashMapDict<K,V>*>();
 }
 
@@ -28,6 +30,7 @@ template <typename K, typename V>
 HashMapDict<K,V>::HashMapDict(const K& k)
 {
     key = k;
+    parser = Pinyin::PinyinParser();
 }
 
 // template<std::totally_ordered K, std::totally_ordered V>

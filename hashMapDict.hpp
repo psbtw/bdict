@@ -27,7 +27,7 @@ private:
     K key;
     SortedVector<V> data;
     std::unordered_map<K,HashMapDict<K,V>> sub;
-    inline static Pinyin::PinyinParser parser;
+    Pinyin::PinyinParser parser;
 public:
     HashMapDict();
     HashMapDict(K& k,V& v);
