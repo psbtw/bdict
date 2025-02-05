@@ -8,7 +8,7 @@
             "name": "bdict-debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/a.out",
+            "program": "${workspaceFolder}/b.out",
             //"preLaunchTask": "xmake-build",
             "args": ["dingding"],
             "stopAtEntry": false,

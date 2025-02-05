@@ -32,6 +32,7 @@ template <typename K, typename V>
 HashMapDict<K,V>::HashMapDict(const K& k)
 {
     key = k;
+    sub.reserve(24);
 }
 
 // template<std::totally_ordered K, std::totally_ordered V>
@@ -96,7 +97,7 @@ bool HashMapDict<K, V>::InsertFirstN(const std::vector<K>& key, const V&& data, 
     }
     // found
     if (idx == key.size()) {
-        ptr->data.insertFisrtN(data, n);
+        ptr->data.insertFirstN(data, n);
         return true;
     }
     return true;
@@ -115,6 +116,7 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
     }
 
     START(BUILD_DICT)
+    
     std::string line;
     int i = 0;
     while (std::getline(file, line)) {
@@ -145,10 +147,10 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
         vector<Pinyin::Alphabet> va;
         parser.StringVecToAlphaVec(entry.pinyin, va);
         Insert(va, {entry.word, entry.freq});
-        if (++i % 10000 == 0) {
-            std::cout << "Word: " << entry.word << ", Pinyin: ";
-            std::cout << ", Frequency: " << entry.freq << std::endl;
-        }
+        // if (++i % 10000 == 0) {
+        //     std::cout << "Word: " << entry.word << ", Pinyin: ";
+        //     std::cout << ", Frequency: " << entry.freq << std::endl;
+        // }
         auto iv = parser.PickInitialVec(va);
         if (iv.size()>0) {
             InsertFirstN(iv, {entry.word, entry.freq}, 20);
@@ -158,33 +160,6 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
     TIMECOST(BUILD_DICT)
     log_info("words count: %d", i);
     std::cout << "dict inited\n";
-
-    // log_trace("start parse file");
-    // START(parse_file);
-    // auto parsedEntries = parseInput(filePath);
-    // log_trace("end parse file");
-    // END(parse_file);
-    // TIMECOST(parse_file);
-    // Pinyin::PinyinParser parser;
-
-    // // Output the parsed entries
-    // START(BUILD_DICT)
-    // for (const auto& entry : *parsedEntries) {
-    //     //std::cout << "Word: " << entry.word << ", Pinyin: ";
-    //     vector<Pinyin::Alphabet> va;
-    //     parser.StringVecToAlphaVec(entry.pinyin, va);
-    //     //std::cout << ", Frequency: " << entry.freq << std::endl;
-    //     Insert(va, {entry.word, entry.freq});
-    //     // auto iv = parser.PickInitialVec(va);
-    //     // if (iv.size()>0) {
-    //     //     InsertFirstN(iv, {entry.word, entry.freq}, 20);
-    //     // }
-    // }
-    // END(BUILD_DICT)
-    // TIMECOST(BUILD_DICT)
-    // log_info("words count: %d", parsedEntries->size());
-    // std::cout << "dict inited\n";
-    // delete parsedEntries;
 }
 
 //template <std::totally_ordered K, std::totally_ordered V>
@@ -217,7 +192,7 @@ bool HashMapDict<K, V>::LookUpByAlphabet(const Pinyin::PinyinVec& k, SortedVecto
 
 //template <std::totally_ordered K, std::totally_ordered V>
 template <typename K, typename V>
-vector<string> HashMapDict<K, V>::MatchWords(const string& src) {
+vector<string> HashMapDict<K, V>::MatchWords(const string& src, int maxLen) {
     auto keys = parser.Parse(src);
     START(match_all)
     SortedVector<V> res;
@@ -227,14 +202,14 @@ vector<string> HashMapDict<K, V>::MatchWords(const string& src) {
         auto ptr = Find(k, idx);
         if (idx == k.size())[[__likely__]] {
             for (auto& v : ptr->get_data().Vec()) {
-                res.insert(v);
+                res.insertFirstN(v, maxLen);
             }
-            log_trace("found exact match for key: [%s], val: [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
+            log_debug("found exact match for key: [%s], val: [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
         } else {
             for (auto& v : ptr->get_data().Vec()) {
-                res.insert(v);
+                res.insertFirstN(v, maxLen);
             }
-            log_trace("didn't find exact match for key: [%s], use longest match [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
+            log_debug("didn't find exact match for key: [%s], use longest match [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
         }
         END(match_1)
         TIMECOST(match_1)
@@ -247,10 +222,47 @@ vector<string> HashMapDict<K, V>::MatchWords(const string& src) {
     }
     END(match_all)
     TIMECOST(match_all)
-    log_trace("convert done, ret: %s", s.str().c_str());
+    log_debug("convert done, ret: %s", s.str().c_str());
     cout<<s.str()<<endl;
     return ret;
 }
+
+template <typename K, typename V>
+vector<string> HashMapDict<K, V>::MatchWordsRecursively(const string& src, int maxLen) {
+    auto keys = parser.Parse(src);
+    START(match_all)
+    SortedVector<V> res;
+    for (const auto& k : keys) {
+        START(match_1)
+        int idx = 0;
+        auto ptr = Find(k, idx);
+        if (idx == k.size())[[__likely__]] {
+            for (auto& v : ptr->get_data().Vec()) {
+                res.insertFirstN(v, maxLen);
+            }
+            log_debug("found exact match for key: [%s], val: [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
+        } else {
+            for (auto& v : ptr->get_data().Vec()) {
+                res.insertFirstN(v, maxLen);
+            }
+            log_debug("didn't find exact match for key: [%s], use longest match [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
+        }
+        END(match_1)
+        TIMECOST(match_1)
+    }
+    vector<string> ret(res.Vec().size());
+    stringstream s;
+    for (int i = 0; i < ret.size(); ++i) {
+        ret[i] = res.Vec()[i].data;
+        s << ret[i] << ", ";
+    }
+    END(match_all)
+    TIMECOST(match_all)
+    log_debug("convert done, ret: %s", s.str().c_str());
+    cout<<s.str()<<endl;
+    return ret;
+}
+
 
 int testHashMapDict(int argc, char* argv[]){
     //auto dict = HashMapDict<Alphabet, WordNode<std::string> >;
@@ -273,7 +285,7 @@ int testHashMapDict(int argc, char* argv[]){
         if (input == "quit") {
             break;
         }
-        auto cadidates = dict.MatchWords(input);
+        auto cadidates = dict.MatchWords(input, 100);
         
     }
     

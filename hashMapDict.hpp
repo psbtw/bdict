@@ -39,14 +39,14 @@ public:
     void BuildDict(const string&);
 
     bool LookUpByAlphabet(const Pinyin::PinyinVec& p, SortedVector<V>& res);
-    vector<string> MatchWords(const string& s);
+    vector<string> MatchWords(const string& s, int maxLen);
+    vector<string> MatchWordsRecursively(const string& s, int maxLen);
 
     SortedVector<V>& get_data() {
         return data;
     }
     //SetParser(Pinyin::PinyinParser* parser) {parser = parser;}
 };
-
 
 struct WordEntry {
     std::string word;
