@@ -45,11 +45,12 @@ unordered_map<string, string>* parseFreqDict(const string& src){
     std::ifstream file(src);
     
     if (!file.is_open()) {
-        std::cerr << "Error opening file: " << filePath << std::endl;
+        std::cerr << "Error opening file: " << src << std::endl;
         return nullptr; // Return empty vector on error
     }
 
-    auto ret = new unordered_map<string, int>();
+    auto ret = new unordered_map<string, string>();
+    auto &ref = *ret;
 
     std::string line;
     while (std::getline(file, line)) {
@@ -62,32 +63,39 @@ unordered_map<string, string>* parseFreqDict(const string& src){
         // Read the word
         lineStream >> word;
         lineStream >> freqPart;
-        ret[word] = freqPart;
+        ref[word] = freqPart;
     }
     return ret;
 }
 
 void mergeDict(const string& src, const string& ref, const string& dst) {
-    auto refMap = parseFreqDict(ref);
+    auto ptr = parseFreqDict(ref);
+    if (ptr == nullptr) {
+        std::cerr << "Error opening ref file: " << ref << std::endl;
+        return;
+    }
+    auto& refMap = *ptr
+    
 
-    std::ofstream ret(dst);
+    std::ofstream file(dst);
     if (!file.is_open()) {
-        std::cerr << "Error opening file: " << dst << std::endl;
+        std::cerr << "Error opening ouptput file: " << dst << std::endl;
+        return;
     }
 
-    std::ifstream file(src);
+    std::ifstream srcFile(src);
     
-    if (!file.is_open()) {
-        std::cerr << "Error opening file: " << src << std::endl;
-        return entries; // Return empty vector on error
+    if (!srcFile.is_open()) {
+        std::cerr << "Error opening src file: " << src << std::endl;
+        return;
     }
 
     std::string line;
-    while (std::getline(file, line)) {
+    while (std::getline(srcFile, line)) {
         std::istringstream lineStream(line);
         WordEntry entry;
         std::string pinyinPart;
-        std::string freqPart;
+        // std::string freqPart;
 
         // Read the word
         lineStream >> entry.word;
@@ -98,21 +106,26 @@ void mergeDict(const string& src, const string& ref, const string& dst) {
         if (!refMap.count(entry.word)) {
             continue;
         }
-        ret << entry.word << "\t";
+        file << entry.word << "\t";
 
         // Read the pinyin (until the last part which is the frequency)
+        bool firstPinyin = true;
         while (lineStream >> pinyinPart) {
             if (std::isdigit(pinyinPart[0])) {
-                freqPart = pinyinPart; // Last part is frequency
-                string c;
-                ret >> c; // tail " "
+                // freqPart = pinyinPart; // Last part is frequency
+                // string c;
+                // file >> c; // tail " "
                 break;
             }
             //entry.pinyin.emplace_back(pinyinPart);
-            ret << pinyinPart << " ";
+            if (!firstPinyin) {
+                file << " ";
+            }
+            file << pinyinPart;
         }
-        ret << "\t" << refMap[entry.word] << endl;
+        file << "\t" << refMap[entry.word] << endl;
     }
+    delete
 }
 
 int testDictParser() {
