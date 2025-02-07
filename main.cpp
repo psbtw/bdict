@@ -13,7 +13,7 @@ void testBinSearch(int k) {
 }
 
 int main(int argc, char* argv[]) {
-    mergeDict("resources/dict.yml", "resources/sgDict.txt", "resources/new_dict.yml");
-    //testHashMapDict(argc, argv);
+    //mergeDict("resources/dict.yml", "resources/8sg.txt", "resources/new_dict.yml");
+    testHashMapDict(argc, argv);
     return 0;
 }

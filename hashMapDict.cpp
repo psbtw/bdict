@@ -274,7 +274,7 @@ int testHashMapDict(int argc, char* argv[]){
 
     HashMapDict<K_t, D_t> dict;
     //dict.BuildDict("./resources/dict_2000.yml");
-    dict.BuildDict("./resources/full_dict.yml");
+    dict.BuildDict("./resources/dict.yml");
 
     string s(argv[1]);
 

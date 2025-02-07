@@ -74,7 +74,7 @@ void mergeDict(const string& src, const string& ref, const string& dst) {
         std::cerr << "Error opening ref file: " << ref << std::endl;
         return;
     }
-    auto& refMap = *ptr
+    auto& refMap = *ptr;
     
 
     std::ofstream file(dst);
@@ -125,7 +125,7 @@ void mergeDict(const string& src, const string& ref, const string& dst) {
         }
         file << "\t" << refMap[entry.word] << endl;
     }
-    delete
+    delete ptr;
 }
 
 int testDictParser() {
