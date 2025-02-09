@@ -215,9 +215,9 @@ int test_parser(int argc, char* argv[]) {
     string s(argv[1]);
     // log_info("try parse: {}", s);
     // spdlog::flush_on(spdlog::level::trace);
-    log_info("try parse: %s", s);
+    log_info("try parse: %s", s.c_str());
     Graph<Pinyin::AlphaMark, Pinyin::MarkKey> g;
-    p.ParseToGraph(g, s);
+    p.ParseToGraph(g, s.c_str());
     auto res = g.DFS_ALL();
     log_info("got res: ");
     for (auto&v : *res) {

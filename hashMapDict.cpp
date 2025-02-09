@@ -9,6 +9,20 @@
 #include <fstream>
 #include "pinyinEncoder/parser.hpp"
 
+template class HashMapDict<K_t, D_t>;
+
+
+
+template<class T>
+int testTemp(T& t){
+    return 1;
+}
+
+int testCompile() {
+    int i = 1;
+    return testTemp<int>(i);
+}
+
 template <typename K, typename V>
 Pinyin::PinyinParser HashMapDict<K,V>::parser = Pinyin::PinyinParser();
 

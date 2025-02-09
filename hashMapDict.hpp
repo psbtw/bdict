@@ -8,6 +8,17 @@
 #include "pinyinEncoder/types.hpp"
 #include "pinyinEncoder/parser.hpp"
 
+int testCompile();
+
+template<class T>
+int testTemp(T& t);
+
+// In the header file where HashMapDict is defined
+#ifdef _WIN32
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __attribute__((visibility("default")))
+#endif
 // template<typename T>
 // concept ArrayType = requires(T t){
 //     t[0] == t[1]; // operator[] and operator == of elements
@@ -21,7 +32,7 @@
 
 //template<std::totally_ordered K, std::totally_ordered V>
 template<typename K, typename V>
-class HashMapDict
+class EXPORT HashMapDict
 {
 private:
     K key;
@@ -58,6 +69,11 @@ std::vector<WordEntry>* parseInput(const std::string& filePath);
 
 using K_t = Pinyin::Alphabet;
 using D_t = WordNode<string>;
+//using BDict = HashMapDict<K_t , D_t >;
+
+class BDict : public HashMapDict<K_t, D_t> {
+
+};
 
 
 int testHashMapDict(int argc, char* argv[]);
