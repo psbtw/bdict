@@ -176,6 +176,65 @@ void HashMapDict<K, V>::BuildDict(const string& filePath)
     std::cout << "dict inited\n";
 }
 
+template <typename K, typename V>
+bool HashMapDict<K, V>::BuildDictWithFd(int fd,long offset,long length)
+{
+    //auto entries = new std::vector<WordEntry>();
+    lseek(fd, offset, SEEK_SET);
+    // Read the file content into a buffer
+    std::vector<char> buffer(length);
+    read(fd, buffer.data(), length);
+    // Use a std::string stream to read line-by-line from the buffer
+    std::istringstream iss(std::string(buffer.data(), length));
+
+    START(BUILD_DICT)
+
+    std::string line;
+    int i = 0;
+    while (std::getline(iss, line)) {
+        std::istringstream lineStream(line);
+        WordEntry entry;
+        std::string pinyinPart;
+        std::string freqPart;
+
+        // Read the word
+        lineStream >> entry.word;
+        if (entry.word[0] == '#') {
+            //spdlog::trace("meet comment: {}", entry.word);
+            continue;
+        }
+
+        // Read the pinyin (until the last part which is the frequency)
+        while (lineStream >> pinyinPart) {
+            if (std::isdigit(pinyinPart[0])) {
+                freqPart = pinyinPart; // Last part is frequency
+                break;
+            }
+            entry.pinyin.emplace_back(pinyinPart);
+        }
+
+        // Convert frequency to size_t
+        entry.freq = std::stoul(freqPart);
+
+        vector<Pinyin::Alphabet> va;
+        parser.StringVecToAlphaVec(entry.pinyin, va);
+        Insert(va, {entry.word, entry.freq});
+        // if (++i % 10000 == 0) {
+        //     std::cout << "Word: " << entry.word << ", Pinyin: ";
+        //     std::cout << ", Frequency: " << entry.freq << std::endl;
+        // }
+        auto iv = parser.PickInitialVec(va);
+        if (iv.size()>0) {
+            InsertFirstN(iv, {entry.word, entry.freq}, 20);
+        }
+    }
+    END(BUILD_DICT)
+    TIMECOST(BUILD_DICT)
+    log_info("words count: %d", i);
+    std::cout << "dict inited\n";
+    return true;
+}
+
 //template <std::totally_ordered K, std::totally_ordered V>
 template <typename K, typename V>
 bool HashMapDict<K, V>::LookUpByAlphabet(const Pinyin::PinyinVec& k, SortedVector<V>& res){

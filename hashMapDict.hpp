@@ -48,6 +48,7 @@ public:
     bool Insert(const std::vector<K>& key, const V&& data);
     bool InsertFirstN(const std::vector<K>& key, const V&& data, int n);
     void BuildDict(const string&);
+    bool BuildDictWithFd(int fd,long offset,long length);
 
     bool LookUpByAlphabet(const Pinyin::PinyinVec& p, SortedVector<V>& res);
     vector<string> MatchWords(const string& s, int maxLen);
