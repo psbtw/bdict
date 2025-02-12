@@ -54,8 +54,12 @@ public:
     vector<string> MatchWords(const string& s, int maxLen);
     vector<string> MatchWordsRecursively(const string& s, int maxLen);
 
-    SortedVector<V>& get_data() {
+    inline const SortedVector<V>& get_data() const {
         return data;
+    }
+
+    inline const std::unordered_map<K,HashMapDict<K,V>>* get_sub() const {
+        return &sub;
     }
     //SetParser(Pinyin::PinyinParser* parser) {parser = parser;}
 };

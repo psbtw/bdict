@@ -9,9 +9,6 @@
 #include <fstream>
 #include "pinyinEncoder/parser.hpp"
 
-template class HashMapDict<K_t, D_t>;
-
-
 
 template<class T>
 int testTemp(T& t){
@@ -308,6 +305,34 @@ vector<string> HashMapDict<K, V>::MatchWords(const string& src, int maxLen) {
 }
 
 template <typename K, typename V>
+void bfs(const HashMapDict<K, V>* ptr,  SortedVector<V>& res) {
+    log_debug("start bfs");
+    vector<const HashMapDict<K,V>*> left, right;
+    left.emplace_back(ptr);
+    while (!left.empty() || !right.empty()) {
+        if (left.size()) {
+            for (const auto& m : left) {
+                res.Merge(m->get_data(), 100);
+                for (const auto& pr : *(m->get_sub()) ) {
+                    right.emplace_back(&pr.second);
+                }
+            }
+            left.clear();
+        }
+        if (right.size()) {
+            for (const auto& m : right) {
+                res.Merge(m->get_data(), 100);
+                for (const auto& pr : *(m->get_sub()) ) {
+                    left.emplace_back(&pr.second);
+                }
+            }
+            right.clear();
+        }
+    }
+    log_debug("bfs done.");
+}
+
+template <typename K, typename V>
 vector<string> HashMapDict<K, V>::MatchWordsRecursively(const string& src, int maxLen) {
     auto keys = parser.Parse(src);
     START(match_all)
@@ -329,7 +354,14 @@ vector<string> HashMapDict<K, V>::MatchWordsRecursively(const string& src, int m
         }
         END(match_1)
         TIMECOST(match_1)
+        //recursive for first key
+        if (&k == &keys[0]) {
+            log_debug("rec for 1st key: ");
+            bfs(ptr, res);
+        }
     }
+    
+
     vector<string> ret(res.Vec().size());
     stringstream s;
     for (int i = 0; i < ret.size(); ++i) {
@@ -365,7 +397,8 @@ int testHashMapDict(int argc, char* argv[]){
         if (input == "quit") {
             break;
         }
-        auto cadidates = dict.MatchWords(input, 100);
+        auto cadidates = dict.MatchWordsRecursively(input, 100);
+        //auto cadidates = dict.MatchWords(input, 100);
         
     }
     

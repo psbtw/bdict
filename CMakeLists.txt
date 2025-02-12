@@ -29,7 +29,7 @@ file(GLOB SRC ${PROJECT_SOURCE_DIR}/*.cpp ${PROJECT_SOURCE_DIR}/*.hpp
 message(Debug "bdict src: ${SRC}")
 #set(BDICT_SRC ${SRC} CACHE INTERNAL "bdict src")
 
-#add_executable(a.out ${SRC} ${COMMON_SRC})
+add_executable(a.out ${SRC} ${COMMON_SRC})
 message(Debug "project_name: ${PROJECT_NAME}")
 add_library(${PROJECT_NAME} SHARED ${SRC} ${COMMON_SRC})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_NAME})
