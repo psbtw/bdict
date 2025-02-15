@@ -192,8 +192,12 @@ vector<PinyinVec> PinyinParser::Parse(const string &s)
         const auto& v = (*res2)[i];
         log_info("route: %s", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](Pinyin::AlphaMark* const &k){return string(k->data.s); }, ",").c_str());
         PinyinVec k(v.size());
+        bool allInitial = true;
         for (int j = 0; j<k.size(); ++j) {
             k[j] = v[j]->data.a;
+            if (allInitial && k[j] > Pinyin::Alphabet::InitialEnd) {
+                allInitial = false;
+            }
         }
         keys[i] = k;
     }
@@ -226,10 +230,10 @@ int test_parser(int argc, char* argv[]) {
     }
     p.ApplyFuzzyForGraph(g);
     auto res2 = g.DFS_ALL();
-    log_info("res after fuzzy: ");
+    log_debug("res after fuzzy: ");
     for (auto&v : *res2) {
         //log_info("{}", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ","));
-        log_info("%s", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ",").c_str());
+        log_info("parsed pinyin: %s", VecToString<Pinyin::AlphaMark*>(&v[0],  v.size(), [](AlphaMark* const &k){return string(k->data.s); }, ",").c_str());
     }
     delete res;
     delete res2;

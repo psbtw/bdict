@@ -47,6 +47,9 @@ public:
             if (src[i] < Alphabet::InitialEnd  ) {
                 ret.emplace_back(src[i]);
             } else if (src[i-1]>Alphabet::InitialEnd) { // self not initial && pre is not Initial
+                if (src[i-1] == Alphabet::U) { 
+                    continue;
+                }    
                 // count self as initial
                 ret.emplace_back(src[i]);
             }
@@ -57,7 +60,14 @@ public:
 
     void ParseToGraph(PinyinGraph& g, const string& src,  size_t start_pos = 0, PinyinGraphNode* cur = nullptr);
     void ApplyFuzzyForGraph(PinyinGraph& g) {
-        g.BFS_LEVEL(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1));
+        bool allInitial = true;
+        for (const auto pr : g.GetTable()) {
+            if (pr.second->data.key.a > Alphabet::InitialEnd){
+                allInitial = false;
+                break;
+            }
+        }
+        g.BFS_LEVEL(bind(&PinyinParser::addFuzzyNode, this, &g, placeholders::_1, allInitial));
         log_trace("fuzzy done.");
     }
 
@@ -195,15 +205,54 @@ private:
         });
     }
 
-    void addFuzzyNode(PinyinGraph* g, PinyinGraphNode* node) {
+    void addFuzzyNode(PinyinGraph* g, PinyinGraphNode* node, bool allInitial = false) {
         if (node->data.data.fz && _fz_map.count(node->data.key.a)) {
             MarkKey newKey(node->data.key);            
             newKey.a = _fz_map[node->data.key.a];
             auto ptr = g->AddNode(newKey, node->data);
             ptr->data.data.s = _alpha_ref[newKey.a];
             ptr->data.data.a = newKey.a;
-            ptr->CopyRelation(node);
+            ptr->data.data.fz = false;
+            if (!allInitial) {
+                ptr->CopyRelation(node);
+            } else {
+                MarkKey hKey(node->data.key);
+                MarkKey fzKey(node->data.key);
+                PinyinGraphNode* hPtr = nullptr;
+                PinyinGraphNode* fzPtr = nullptr;
+                switch (node->data.key.a)
+                {
+                case Alphabet::CH:
+                __attribute__((fallthrough));
+                case Alphabet::SH:
+                __attribute__((fallthrough));
+                case Alphabet::ZH:
+                    hKey.a = Alphabet::H;
+                    hKey.start_pos = node->data.key.start_pos+1;
+                    hPtr = g->AddNode(hKey, node->data);
+                    hPtr->data.data.s = "h";
+                    hPtr->data.data.a = Alphabet::H;
+                    hPtr->data.data.fz = false;
+                    ptr->AddToNode(hPtr);
+                    hPtr->AddFromNode(ptr);
+                    for (auto t : node->to_nodes) {
+                        hPtr->AddToNode(t);
+                    }
+                    for (auto t : node->from_nodes) {
+                        ptr->AddFromNode(t);
+                    }
+                    fzKey.end_pos -= 1;
+                    fzPtr = g->AddNode(fzKey, node->data);
+                    fzPtr->data.data.fz = false;
+                    fzPtr->CopyRelation(ptr);
+                    break; 
+                default:
+                    ptr->CopyRelation(node);
+                    break;
+                }
+            }
             //log_trace("copied node {} ", node->data.data.s);
+            
         }
     }
 

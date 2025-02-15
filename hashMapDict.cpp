@@ -344,6 +344,7 @@ vector<string> HashMapDict<K, V>::MatchWordsRecursively(const string& src, int m
         if (idx == k.size())[[__likely__]] {
             for (auto& v : ptr->get_data().Vec()) {
                 res.insertFirstN(v, maxLen);
+                bfs(ptr, res);
             }
             log_debug("found exact match for key: [%s], val: [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
         } else {
@@ -355,10 +356,10 @@ vector<string> HashMapDict<K, V>::MatchWordsRecursively(const string& src, int m
         END(match_1)
         TIMECOST(match_1)
         //recursive for first key
-        if (&k == &keys[0]) {
-            log_debug("rec for 1st key: ");
-            bfs(ptr, res);
-        }
+        //if (&k == &keys[0]) {
+            // log_debug("rec for 1st key: ");
+            // bfs(ptr, res);
+        //}
     }
     
 
