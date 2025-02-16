@@ -48,20 +48,24 @@ struct WordNode
         //log_trace("copy constructor of &&, {}:{}", data, score);
     }
     bool operator<(const WordNode& other) const {
-        return this->score < other.score;
+        return this->score < other.score ||
+            (this->score == other.score && this->data.compare(other.data) < 0);
     }
     bool operator>(const WordNode& other) const {
-        return this->score > other.score;
+        return this->score > other.score ||
+            (this->score == other.score && this->data.compare(other.data) > 0);
     }
     bool operator==(const WordNode& other) const {
-        return this->data == other.data;
+        return this->data.compare(other.data) == 0;
     }
 
     bool operator<=(const WordNode& other) const {
-        return this->score <= other.score;
+        return this->score <= other.score ||
+            (this->score == other.score && this->data.compare(other.data) <= 0);
     }
     bool operator>=(const WordNode& other) const {
-        return this->score >= other.score;
+        return this->score > other.score ||
+            (this->score == other.score && this->data.compare(other.data) >= 0);
     }
 
     inline string ToString() const{

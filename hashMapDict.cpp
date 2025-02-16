@@ -158,13 +158,14 @@ bool HashMapDict<K, V>::BuildDict(const string& filePath)
         vector<Pinyin::Alphabet> va;
         parser.StringVecToAlphaVec(entry.pinyin, va);
         Insert(va, {entry.word, entry.freq});
+        ++i;
         // if (++i % 10000 == 0) {
         //     std::cout << "Word: " << entry.word << ", Pinyin: ";
         //     std::cout << ", Frequency: " << entry.freq << std::endl;
         // }
         auto iv = parser.PickInitialVec(va);
         if (iv.size()>0) {
-            InsertFirstN(iv, {entry.word, entry.freq}, 20);
+            InsertFirstN(iv, {entry.word, entry.freq}, 50);
         }
     }
     END(BUILD_DICT)
@@ -304,15 +305,18 @@ vector<string> HashMapDict<K, V>::MatchWords(const string& src, int maxLen) {
     return ret;
 }
 
+const int max_bfs_len = 100;
 template <typename K, typename V>
 void bfs(const HashMapDict<K, V>* ptr,  SortedVector<V>& res) {
-    log_debug("start bfs");
+    log_trace("start bfs");
     vector<const HashMapDict<K,V>*> left, right;
     left.emplace_back(ptr);
     while (!left.empty() || !right.empty()) {
         if (left.size()) {
             for (const auto& m : left) {
-                res.Merge(m->get_data(), 100);
+                //log_debug("merging %s", m->get_data().ToString().c_str());
+                res.Merge(m->get_data(), max_bfs_len);
+                //log_debug("after merge: %s", res.ToString().c_str());
                 for (const auto& pr : *(m->get_sub()) ) {
                     right.emplace_back(&pr.second);
                 }
@@ -321,7 +325,9 @@ void bfs(const HashMapDict<K, V>* ptr,  SortedVector<V>& res) {
         }
         if (right.size()) {
             for (const auto& m : right) {
-                res.Merge(m->get_data(), 100);
+                //log_debug("merging %s", m->get_data().ToString().c_str());
+                res.Merge(m->get_data(), max_bfs_len);
+                //log_debug("after merge: %s", res.ToString().c_str());
                 for (const auto& pr : *(m->get_sub()) ) {
                     left.emplace_back(&pr.second);
                 }
@@ -329,7 +335,7 @@ void bfs(const HashMapDict<K, V>* ptr,  SortedVector<V>& res) {
             right.clear();
         }
     }
-    log_debug("bfs done.");
+    log_trace("bfs done.");
 }
 
 template <typename K, typename V>
@@ -343,12 +349,14 @@ vector<string> HashMapDict<K, V>::MatchWordsRecursively(const string& src, int m
         auto ptr = Find(k, idx);
         if (idx == k.size())[[__likely__]] {
             for (auto& v : ptr->get_data().Vec()) {
+                log_trace("inserting %s", v.ToString().c_str());
                 res.insertFirstN(v, maxLen);
                 bfs(ptr, res);
             }
             log_debug("found exact match for key: [%s], val: [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
         } else {
             for (auto& v : ptr->get_data().Vec()) {
+                log_trace("inserting %s", v.ToString().c_str());
                 res.insertFirstN(v, maxLen);
             }
             log_debug("didn't find exact match for key: [%s], use longest match [%s]", parser.AlphabetVecToString(k).c_str(), ptr->get_data().ToString().c_str());
@@ -362,7 +370,7 @@ vector<string> HashMapDict<K, V>::MatchWordsRecursively(const string& src, int m
         //}
     }
     
-
+    log_debug("res before convert: %s", res.ToString().c_str());
     vector<string> ret(res.Vec().size());
     stringstream s;
     for (int i = 0; i < ret.size(); ++i) {
